@@ -1,0 +1,814 @@
+// ============================================================================
+// GestEsteticaAuto — Schema Prisma 7 (PostgreSQL)
+// ============================================================================
+// Convenções:
+//  - `Negocio` é o tenant (preparação para SaaS). Entidades "raiz" recebem
+//    `negocioId`; entidades filhas herdam o escopo via relação com a raiz.
+//  - Status são armazenados como `String` (valores definidos no domínio,
+//    em src/Domain/**/*_types.ts). Enums do Prisma só onde o conjunto de
+//    valores é estável e útil para integridade da persistência.
+//  - Timestamps: `criadoEm` e `atualizadoEm` (@updatedAt).
+//  - IDs: `cuid()` como default.
+//  - Valores monetários: `Decimal` com `@db.Decimal(10, 2)`.
+//  - Snapshots comerciais: itens de orçamento/OS preservam descricao,
+//    quantidade, valorUnitario e desconto (não dependem do catálogo atual).
+//
+// A URL de conexão fica em `prisma.config.ts` (requisito do Prisma 7),
+// NÃO aqui no datasource.
+// ============================================================================
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// NEGÓCIO (tenant)
+// ============================================================================
+
+model Negocio {
+  id           String   @id @default(cuid())
+  nome         String
+  cnpj         String?  @unique
+  telefone     String?
+  email        String?
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  usuarios            Usuario[]
+  clientes            Cliente[]
+  veiculos            Veiculo[]
+  origensCliente      OrigemCliente[]
+  tagsCliente         TagCliente[]
+  categoriasServico   CategoriaServico[]
+  servicos            Servico[]
+  categoriasProduto   CategoriaProduto[]
+  produtos            Produto[]
+  pacotesServico      PacoteServico[]
+  tabelasPreco        TabelaPreco[]
+  orcamentos          Orcamento[]
+  politicasComerciais PoliticaComercial[]
+  condicoesComerciais CondicaoComercial[]
+  ordensServico       OrdemServico[]
+  agendas             Agenda[]
+  agendamentos        Agendamento[]
+  titulos             Titulo[]
+  formasPagamento     FormaPagamento[]
+  sinais              Sinal[]
+  estoques            Estoque[]
+  auditorias          Auditoria[]
+  anexos              Anexo[]
+}
+
+model Usuario {
+  id           String   @id @default(cuid())
+  negocioId    String
+  nome         String
+  email        String
+  senhaHash    String
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  negocio    Negocio     @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  auditorias Auditoria[]
+
+  @@unique([negocioId, email])
+  @@index([negocioId])
+}
+
+// ============================================================================
+// CLIENTES
+// ============================================================================
+
+model Cliente {
+  id           String     @id @default(cuid())
+  negocioId    String
+  nome         String
+  tipoPessoa   TipoPessoa @default(PESSOA_FISICA)
+  cpfCnpj      String?
+  email        String?
+  telefone     String?
+  status       String     @default("ATIVO")
+  observacoes  String?
+  origemId     String?
+  criadoEm     DateTime   @default(now())
+  atualizadoEm DateTime   @updatedAt
+
+  negocio       Negocio              @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  origem        OrigemCliente?       @relation(fields: [origemId], references: [id], onDelete: SetNull)
+  contatos      Contato[]
+  enderecos     Endereco[]
+  preferencias  PreferenciaCliente[]
+  tags          TagCliente[]
+  anexos        AnexoCliente[]
+  veiculos      Veiculo[]
+  orcamentos    Orcamento[]
+  ordensServico OrdemServico[]
+  agendamentos  Agendamento[]
+  titulos       Titulo[]
+  sinais        Sinal[]
+
+  @@index([negocioId])
+  @@index([negocioId, status])
+}
+
+model Contato {
+  id        String      @id @default(cuid())
+  clienteId String
+  tipo      TipoContato
+  valor     String
+  principal Boolean     @default(false)
+  criadoEm  DateTime    @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+}
+
+model Endereco {
+  id          String   @id @default(cuid())
+  clienteId   String
+  cep         String?
+  logradouro  String?
+  numero      String?
+  complemento String?
+  bairro      String?
+  cidade      String?
+  estado      String?
+  principal   Boolean  @default(false)
+  criadoEm    DateTime @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+}
+
+model PreferenciaCliente {
+  id        String   @id @default(cuid())
+  clienteId String
+  chave     String
+  valor     String
+  criadoEm  DateTime @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@unique([clienteId, chave])
+  @@index([clienteId])
+}
+
+model TagCliente {
+  id        String   @id @default(cuid())
+  negocioId String
+  nome      String
+  cor       String?
+  criadoEm  DateTime @default(now())
+
+  negocio  Negocio   @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  clientes Cliente[]
+
+  @@unique([negocioId, nome])
+  @@index([negocioId])
+}
+
+model OrigemCliente {
+  id        String   @id @default(cuid())
+  negocioId String
+  nome      String
+  criadoEm  DateTime @default(now())
+
+  negocio  Negocio   @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  clientes Cliente[]
+
+  @@index([negocioId])
+}
+
+model AnexoCliente {
+  id        String   @id @default(cuid())
+  clienteId String
+  anexoId   String
+  criadoEm  DateTime @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  anexo   Anexo   @relation(fields: [anexoId], references: [id], onDelete: Cascade)
+
+  @@unique([clienteId, anexoId])
+  @@index([clienteId])
+  @@index([anexoId])
+}
+
+// ============================================================================
+// VEÍCULOS
+// ============================================================================
+
+model Veiculo {
+  id            String   @id @default(cuid())
+  negocioId     String
+  clienteId     String
+  placa         String?
+  marca         String?
+  modelo        String?
+  anoFabricacao Int?
+  anoModelo     Int?
+  cor           String?
+  chassi        String?
+  renavam       String?
+  quilometragem Int?
+  observacoes   String?
+  status        String   @default("ATIVO")
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  negocio               Negocio               @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  cliente               Cliente               @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  orcamentos            Orcamento[]
+  ordensServico         OrdemServico[]
+  agendamentos          Agendamento[]
+  registrosFotograficos RegistroFotografico[]
+
+  @@index([negocioId])
+  @@index([clienteId])
+}
+
+// ============================================================================
+// CATÁLOGO
+// ============================================================================
+
+model CategoriaServico {
+  id           String   @id @default(cuid())
+  negocioId    String
+  nome         String
+  descricao    String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  negocio  Negocio   @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  servicos Servico[]
+
+  @@index([negocioId])
+}
+
+model Servico {
+  id                 String   @id @default(cuid())
+  negocioId          String
+  categoriaServicoId String?
+  nome               String
+  descricao          String?
+  precoBase          Decimal? @db.Decimal(10, 2)
+  duracaoMinutos     Int?
+  status             String   @default("ATIVO")
+  criadoEm           DateTime @default(now())
+  atualizadoEm       DateTime @updatedAt
+
+  negocio           Negocio            @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  categoria         CategoriaServico?  @relation(fields: [categoriaServicoId], references: [id], onDelete: SetNull)
+  itensOrcamento    ItemOrcamento[]
+  itensOrdemServico ItemOrdemServico[]
+  pacotes           PacoteServico[]
+
+  @@index([negocioId])
+  @@index([categoriaServicoId])
+}
+
+model CategoriaProduto {
+  id           String   @id @default(cuid())
+  negocioId    String
+  nome         String
+  descricao    String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  negocio  Negocio   @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  produtos Produto[]
+
+  @@index([negocioId])
+}
+
+model Produto {
+  id                 String   @id @default(cuid())
+  negocioId          String
+  categoriaProdutoId String?
+  nome               String
+  descricao          String?
+  preco              Decimal? @db.Decimal(10, 2)
+  codigoBarras       String?
+  estoqueMinimo      Int?
+  status             String   @default("ATIVO")
+  criadoEm           DateTime @default(now())
+  atualizadoEm       DateTime @updatedAt
+
+  negocio           Negocio            @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  categoria         CategoriaProduto?  @relation(fields: [categoriaProdutoId], references: [id], onDelete: SetNull)
+  itensOrcamento    ItemOrcamento[]
+  itensOrdemServico ItemOrdemServico[]
+  estoques          Estoque[]
+
+  @@index([negocioId])
+  @@index([categoriaProdutoId])
+}
+
+model PacoteServico {
+  id           String   @id @default(cuid())
+  negocioId    String
+  nome         String
+  descricao    String?
+  preco        Decimal? @db.Decimal(10, 2)
+  status       String   @default("ATIVO")
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  negocio  Negocio   @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  servicos Servico[]
+
+  @@index([negocioId])
+}
+
+model TabelaPreco {
+  id             String    @id @default(cuid())
+  negocioId      String
+  nome           String
+  descricao      String?
+  vigenciaInicio DateTime?
+  vigenciaFim    DateTime?
+  status         String    @default("ATIVA")
+  criadoEm       DateTime  @default(now())
+  atualizadoEm   DateTime  @updatedAt
+
+  negocio Negocio @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+
+  @@index([negocioId])
+}
+
+// ============================================================================
+// COMERCIAL
+// ============================================================================
+
+model Orcamento {
+  id           String   @id @default(cuid())
+  negocioId    String
+  clienteId    String
+  veiculoId    String?
+  numero       String?
+  status       String   @default("RASCUNHO")
+  observacoes  String?
+  validadeDias Int?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  negocio      Negocio           @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  cliente      Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  veiculo      Veiculo?          @relation(fields: [veiculoId], references: [id], onDelete: SetNull)
+  itens        ItemOrcamento[]
+  aceites      AceiteOrcamento[]
+  ordemServico OrdemServico?
+  titulos      Titulo[]
+
+  @@index([negocioId])
+  @@index([clienteId])
+  @@index([veiculoId])
+  @@index([negocioId, status])
+}
+
+model ItemOrcamento {
+  id            String   @id @default(cuid())
+  orcamentoId   String
+  servicoId     String?
+  produtoId     String?
+  descricao     String?
+  quantidade    Int      @default(1)
+  valorUnitario Decimal  @db.Decimal(10, 2)
+  desconto      Decimal? @db.Decimal(10, 2)
+
+  orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  servico   Servico?  @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  produto   Produto?  @relation(fields: [produtoId], references: [id], onDelete: SetNull)
+
+  @@index([orcamentoId])
+  @@index([servicoId])
+  @@index([produtoId])
+}
+
+model AceiteOrcamento {
+  id          String    @id @default(cuid())
+  orcamentoId String
+  status      String    @default("PENDENTE")
+  assinatura  String?
+  aceitoEm    DateTime?
+  enviadoEm   DateTime?
+  expiradoEm  DateTime?
+  ip          String?
+  criadoEm    DateTime  @default(now())
+
+  orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+
+  @@index([orcamentoId])
+}
+
+model PoliticaComercial {
+  id           String   @id @default(cuid())
+  negocioId    String
+  nome         String
+  descricao    String?
+  regras       Json?
+  status       String   @default("ATIVA")
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  negocio Negocio @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+
+  @@index([negocioId])
+}
+
+model CondicaoComercial {
+  id            String   @id @default(cuid())
+  negocioId     String
+  nome          String
+  descricao     String?
+  tipoDesconto  String?
+  valorDesconto Decimal? @db.Decimal(10, 2)
+  status        String   @default("ATIVA")
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  negocio Negocio @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+
+  @@index([negocioId])
+}
+
+// ============================================================================
+// OPERAÇÃO
+// ============================================================================
+
+model OrdemServico {
+  id           String    @id @default(cuid())
+  negocioId    String
+  clienteId    String
+  veiculoId    String
+  orcamentoId  String?   @unique
+  numero       String?
+  status       String    @default("ABERTA")
+  observacoes  String?
+  dataInicio   DateTime?
+  dataFim      DateTime?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  negocio               Negocio               @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  cliente               Cliente               @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  veiculo               Veiculo               @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  orcamento             Orcamento?            @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)
+  itens                 ItemOrdemServico[]
+  inspecaoEntrada       InspecaoEntrada?
+  registrosFotograficos RegistroFotografico[]
+  observacoesTecnicas   ObservacaoTecnica[]
+  reservasProdutos      ReservaProduto[]
+  titulos               Titulo[]
+
+  @@index([negocioId])
+  @@index([clienteId])
+  @@index([veiculoId])
+  @@index([orcamentoId])
+  @@index([negocioId, status])
+}
+
+model ItemOrdemServico {
+  id             String   @id @default(cuid())
+  ordemServicoId String
+  servicoId      String?
+  produtoId      String?
+  descricao      String?
+  quantidade     Int      @default(1)
+  valorUnitario  Decimal  @db.Decimal(10, 2)
+  desconto       Decimal? @db.Decimal(10, 2)
+  status         String   @default("PENDENTE")
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  servico      Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  produto      Produto?     @relation(fields: [produtoId], references: [id], onDelete: SetNull)
+
+  @@index([ordemServicoId])
+  @@index([servicoId])
+  @@index([produtoId])
+}
+
+model InspecaoEntrada {
+  id             String    @id @default(cuid())
+  ordemServicoId String    @unique
+  realizadoEm    DateTime?
+  observacoes    String?
+  criadoEm       DateTime  @default(now())
+
+  ordemServico OrdemServico       @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  checklists   ChecklistVeiculo[]
+
+  @@index([ordemServicoId])
+}
+
+model ChecklistVeiculo {
+  id                String  @id @default(cuid())
+  inspecaoEntradaId String
+  item              String
+  estado            String  @default("NAO_VERIFICADO")
+  verificado        Boolean @default(false)
+  observacao        String?
+  confirmacao       String?
+
+  inspecaoEntrada InspecaoEntrada @relation(fields: [inspecaoEntradaId], references: [id], onDelete: Cascade)
+
+  @@index([inspecaoEntradaId])
+}
+
+model RegistroFotografico {
+  id             String   @id @default(cuid())
+  ordemServicoId String?
+  veiculoId      String?
+  anexoId        String
+  descricao      String?
+  criadoEm       DateTime @default(now())
+
+  ordemServico OrdemServico? @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  veiculo      Veiculo?      @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  anexo        Anexo         @relation(fields: [anexoId], references: [id], onDelete: Cascade)
+
+  @@index([ordemServicoId])
+  @@index([veiculoId])
+  @@index([anexoId])
+}
+
+model Agenda {
+  id           String   @id @default(cuid())
+  negocioId    String
+  nome         String
+  descricao    String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  negocio      Negocio       @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  agendamentos Agendamento[]
+
+  @@index([negocioId])
+}
+
+model Agendamento {
+  id             String    @id @default(cuid())
+  negocioId      String
+  agendaId       String?
+  clienteId      String?
+  veiculoId      String?
+  dataHoraInicio DateTime
+  dataHoraFim    DateTime?
+  status         String    @default("AGENDADO")
+  observacoes    String?
+  criadoEm       DateTime  @default(now())
+  atualizadoEm   DateTime  @updatedAt
+
+  negocio Negocio  @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  agenda  Agenda?  @relation(fields: [agendaId], references: [id], onDelete: SetNull)
+  cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  veiculo Veiculo? @relation(fields: [veiculoId], references: [id], onDelete: SetNull)
+
+  @@index([negocioId])
+  @@index([agendaId])
+  @@index([clienteId])
+  @@index([veiculoId])
+  @@index([dataHoraInicio])
+}
+
+model ObservacaoTecnica {
+  id             String   @id @default(cuid())
+  ordemServicoId String
+  texto          String
+  criadoEm       DateTime @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+
+  @@index([ordemServicoId])
+}
+
+// ============================================================================
+// FINANCEIRO
+// ============================================================================
+
+model FormaPagamento {
+  id        String              @id @default(cuid())
+  negocioId String
+  nome      String
+  tipo      TipoFormaPagamento?
+  status    String              @default("ATIVA")
+  criadoEm  DateTime            @default(now())
+
+  negocio    Negocio     @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  pagamentos Pagamento[]
+
+  @@index([negocioId])
+}
+
+model Titulo {
+  id             String    @id @default(cuid())
+  negocioId      String
+  clienteId      String
+  orcamentoId    String?
+  ordemServicoId String?
+  descricao      String?
+  valorTotal     Decimal   @db.Decimal(10, 2)
+  status         String    @default("ABERTO")
+  dataEmissao    DateTime  @default(now())
+  dataVencimento DateTime?
+  criadoEm       DateTime  @default(now())
+  atualizadoEm   DateTime  @updatedAt
+
+  negocio      Negocio       @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  cliente      Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  orcamento    Orcamento?    @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)
+  ordemServico OrdemServico? @relation(fields: [ordemServicoId], references: [id], onDelete: SetNull)
+  parcelas     Parcela[]
+  pagamentos   Pagamento[]
+
+  @@index([negocioId])
+  @@index([clienteId])
+  @@index([status])
+}
+
+model Parcela {
+  id             String    @id @default(cuid())
+  tituloId       String
+  numero         Int
+  valor          Decimal   @db.Decimal(10, 2)
+  status         String    @default("PENDENTE")
+  dataVencimento DateTime?
+  dataPagamento  DateTime?
+  criadoEm       DateTime  @default(now())
+
+  titulo     Titulo      @relation(fields: [tituloId], references: [id], onDelete: Cascade)
+  pagamentos Pagamento[]
+
+  @@unique([tituloId, numero])
+  @@index([tituloId])
+}
+
+model Pagamento {
+  id               String   @id @default(cuid())
+  tituloId         String?
+  parcelaId        String?
+  formaPagamentoId String?
+  valor            Decimal  @db.Decimal(10, 2)
+  status           String   @default("REALIZADO")
+  dataPagamento    DateTime @default(now())
+  observacoes      String?
+  criadoEm         DateTime @default(now())
+
+  titulo         Titulo?         @relation(fields: [tituloId], references: [id], onDelete: Cascade)
+  parcela        Parcela?        @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
+  formaPagamento FormaPagamento? @relation(fields: [formaPagamentoId], references: [id], onDelete: SetNull)
+
+  @@index([tituloId])
+  @@index([parcelaId])
+  @@index([formaPagamentoId])
+}
+
+model Sinal {
+  id          String   @id @default(cuid())
+  negocioId   String
+  clienteId   String?
+  valor       Decimal  @db.Decimal(10, 2)
+  status      String   @default("PENDENTE")
+  observacoes String?
+  criadoEm    DateTime @default(now())
+
+  negocio Negocio  @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+
+  @@index([negocioId])
+  @@index([clienteId])
+}
+
+// ============================================================================
+// ESTOQUE
+// ============================================================================
+
+model Estoque {
+  id               String   @id @default(cuid())
+  negocioId        String
+  produtoId        String
+  quantidade       Int      @default(0)
+  quantidadeMinima Int?
+  criadoEm         DateTime @default(now())
+  atualizadoEm     DateTime @updatedAt
+
+  negocio       Negocio               @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  produto       Produto               @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  movimentacoes MovimentacaoEstoque[]
+  reservas      ReservaProduto[]
+
+  @@unique([produtoId])
+  @@index([negocioId])
+}
+
+model MovimentacaoEstoque {
+  id         String                  @id @default(cuid())
+  estoqueId  String
+  tipo       TipoMovimentacaoEstoque
+  quantidade Int
+  motivo     String?
+  referencia String?
+  criadoEm   DateTime                @default(now())
+
+  estoque Estoque @relation(fields: [estoqueId], references: [id], onDelete: Cascade)
+
+  @@index([estoqueId])
+  @@index([criadoEm])
+}
+
+model ReservaProduto {
+  id             String   @id @default(cuid())
+  estoqueId      String
+  ordemServicoId String?
+  quantidade     Int
+  status         String   @default("RESERVADO")
+  criadoEm       DateTime @default(now())
+
+  estoque      Estoque       @relation(fields: [estoqueId], references: [id], onDelete: Cascade)
+  ordemServico OrdemServico? @relation(fields: [ordemServicoId], references: [id], onDelete: SetNull)
+
+  @@index([estoqueId])
+  @@index([ordemServicoId])
+}
+
+// ============================================================================
+// SHARED
+// ============================================================================
+
+model Auditoria {
+  id         String   @id @default(cuid())
+  negocioId  String
+  entidade   String
+  entidadeId String?
+  acao       String
+  usuarioId  String?
+  dados      Json?
+  criadoEm   DateTime @default(now())
+
+  negocio Negocio  @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([negocioId])
+  @@index([entidade, entidadeId])
+  @@index([criadoEm])
+}
+
+model Anexo {
+  id        String   @id @default(cuid())
+  negocioId String
+  nome      String
+  tipo      String?
+  mimeType  String?
+  url       String
+  tamanho   Int?
+  criadoEm  DateTime @default(now())
+
+  negocio               Negocio               @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  anexosCliente         AnexoCliente[]
+  registrosFotograficos RegistroFotografico[]
+
+  @@index([negocioId])
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum TipoPessoa {
+  PESSOA_FISICA
+  PESSOA_JURIDICA
+}
+
+enum TipoContato {
+  TELEFONE
+  CELULAR
+  WHATSAPP
+  EMAIL
+  OUTRO
+}
+
+enum TipoMovimentacaoEstoque {
+  ENTRADA
+  SAIDA
+  AJUSTE
+  RESERVA
+}
+
+enum TipoFormaPagamento {
+  DINHEIRO
+  PIX
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  BOLETO
+  TRANSFERENCIA
+  OUTRO
+}
