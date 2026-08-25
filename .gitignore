@@ -57,3 +57,12 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Prisma — cliente gerado (regenerar com `npx prisma generate`)
 /src/generated/prisma
+
+# Documentação local / estudo — não vai para o repositório remoto
+# (guias de módulo, guias de agente, anotações, decisões e rascunhos)
+/docs
+/Milestones
+**/doc/
+**/rascunho/
+src/Domain/comercial/md/
+src/IntegraçãoWPP/fluxos/
