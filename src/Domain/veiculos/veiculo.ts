@@ -8,6 +8,9 @@ import { VeiculoProps, CriarVeiculoProps } from "./VeiculoProps";
 export class Veiculo {
   private constructor(private readonly props: VeiculoProps) {}
 
+  // Obrigatórios: clienteId, marca e modelo. Decisões: quilometragem não pode
+  // ser negativa; placa/ano/cor/chassi/renavam são opcionais e viram null
+  // quando vazios; status inicial ATIVO; histórico de alterações começa vazio.
   static criar(props: CriarVeiculoProps): Veiculo {
     const marca = props.marca?.trim();
     const modelo = props.modelo?.trim();
@@ -46,6 +49,8 @@ export class Veiculo {
     });
   }
 
+  // Padrão dos métodos de alteração: normalizar (trim) → validar o obrigatório
+  // → registrar no histórico → alterar o estado → atualizar atualizadoEm.
   alterarPlaca(placa: string | null): void {
     const placaNormalizada = placa?.trim() || null;
 
@@ -148,6 +153,8 @@ export class Veiculo {
     this.props.atualizadoEm = new Date();
   }
 
+  // Vincula o veículo a outro cliente — decisão: o veículo não é deletado nem
+  // duplicado ao trocar de dono; apenas o clienteId muda com registro.
   vincularCliente(clienteId: string): void {
     const clienteNormalizado = clienteId.trim();
     if (!clienteNormalizado) {
@@ -165,6 +172,8 @@ export class Veiculo {
     this.props.atualizadoEm = new Date();
   }
 
+  // Ativar/inativar são idempotentes (status igual → no-op) e nunca apagam o
+  // veículo — histórico de OS/orçamento o referencia por veiculoId.
   ativar(): void {
     if (this.props.status === "ATIVO") {
       return;

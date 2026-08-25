@@ -9,6 +9,9 @@ import { UnidadeMedida } from "./unidade_medida_types";
 export class Produto {
   private constructor(private readonly props: ProdutoProps) {}
 
+  // Obrigatórios: negocioId, nome, tipoUso e unidadeMedida. Decisões: valores
+  // de custo/preço não podem ser negativos; tipoUso define se o produto
+  // alimenta estoque interno, de venda ou ambos; status inicial ATIVO.
   static criar(props: CriarProdutoProps): Produto {
     const negocioId = props.negocioId?.trim();
     if (!negocioId) {
@@ -73,6 +76,8 @@ export class Produto {
 
   // --- Dados principais ---
 
+  // Padrão dos métodos de atualização: normalizar → validar → registrar no
+  // histórico (que atualiza atualizadoEm) → alterar o estado.
   atualizarNome(nome: string, alteradoPor?: string | null): void {
     const nomeNormalizado = nome.trim();
     if (!nomeNormalizado) {
@@ -106,6 +111,8 @@ export class Produto {
     this.props.categoriaId = novaCategoria;
   }
 
+  // Mudar tipoUso redireciona qual estoque consome o produto (interno, venda
+  // ou ambos) — decisão central para os módulos de estoque.
   alterarTipoUso(tipoUso: TipoUsoProduto, alteradoPor?: string | null): void {
     if (!tipoUso) {
       throw new CatalogoError("Tipo de uso do produto é obrigatório");
@@ -178,6 +185,8 @@ export class Produto {
 
   // --- Status ---
 
+  // Status idempotente: ativar/inativar não duplicam histórico quando o status
+  // já é o desejado; inativar não apaga o produto (estoques o referenciam).
   ativar(alteradoPor?: string | null): void {
     if (this.props.status === "ATIVO") {
       return;

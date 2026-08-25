@@ -17,6 +17,9 @@ import { DadosAlteracaoComercial } from "./comercial_types";
 export class Orcamento {
   private constructor(private readonly props: OrcamentoProps) {}
 
+  // Obrigatórios: negocioId e clienteId. Decisões: valores começam zerados
+  // (nunca recebidos de fora — são calculados); status inicial RASCUNHO;
+  // itens/aceite/histórico vazios; veiculoId, política e condição opcionais.
   static criar(props: CriarOrcamentoProps): Orcamento {
     const negocioId = props.negocioId?.trim();
     if (!negocioId) {
@@ -89,6 +92,8 @@ export class Orcamento {
     this.recalcular();
   }
 
+  // Edição de item segue o padrão: reconstituir a entidade → validar/alterar
+  // → projetar de volta (toProps) → recalcular os totais do orçamento.
   alterarQuantidadeItem(itemId: string, quantidade: number): void {
     this.validarEditavel();
     const index = this.props.itens.findIndex((item) => item.id === itemId);
@@ -125,6 +130,8 @@ export class Orcamento {
     this.recalcular();
   }
 
+  // Desconto aplicado no total (não por item). Decisões: nunca negativo e
+  // nunca maior que o subtotal — evita orçamento com total negativo.
   aplicarDesconto(valor: number, dados?: DadosAlteracaoComercial): void {
     this.validarEditavel();
     if (valor < 0) {
@@ -177,6 +184,8 @@ export class Orcamento {
     this.transicionar("EM_ABERTO", dados);
   }
 
+  // Aceitar gera um AceiteOrcamento PENDENTE e o registra como ACEITO na
+  // mesma operação — decisão: no MVP o cliente decide por canal no ato.
   aceitar(
     canal?: CanalAceiteOrcamento | null,
     observacoes?: string | null,
@@ -252,6 +261,8 @@ export class Orcamento {
     this.props.atualizadoEm = new Date();
   }
 
+  // Todos os valores (subtotal, total) são SEMPRE calculados a partir dos
+  // itens — decisão do projeto: nada de valor derivado vindo de fora.
   private recalcular(): void {
     this.props.subtotal = this.props.itens.reduce(
       (soma, item) => soma + item.valorTotal,

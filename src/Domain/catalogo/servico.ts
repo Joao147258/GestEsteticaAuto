@@ -7,6 +7,9 @@ import { ServicoProps, CriarServicoProps } from "./ServicoProps";
 export class Servico {
   private constructor(private readonly props: ServicoProps) {}
 
+  // Obrigatórios: negocioId, nome e precoBase. Decisões: preço base e duração
+  // estimada não podem ser negativos; duração é opcional (serviço sem tempo
+  // definido); status inicial ATIVO; orçamento/OS copiam o valor no snapshot.
   static criar(props: CriarServicoProps): Servico {
     const negocioId = props.negocioId?.trim();
     if (!negocioId) {
@@ -63,6 +66,8 @@ export class Servico {
 
   // --- Dados principais ---
 
+  // Padrão: normalizar → validar → registrar → alterar estado (atualizadoEm
+  // é atualizado junto com o histórico).
   atualizarNome(nome: string, alteradoPor?: string | null): void {
     const nomeNormalizado = nome.trim();
     if (!nomeNormalizado) {
