@@ -13,11 +13,22 @@ export type TipoFormaPagamento =
   | "OUTRO";
 
 // Propriedades da entidade FormaPagamento.
+// Representa os meios de pagamento aceitos pelo negócio (PIX, cartão, etc).
 export interface FormaPagamentoProps {
   id: string;
   negocioId: string;
   nome: string;
   tipo?: TipoFormaPagamento | null;
   status: StatusFormaPagamento;
+  exigeConfirmacaoManual?: boolean;
   criadoEm: Date;
+  atualizadoEm?: Date;
+}
+
+// Dados necessários para criar uma nova FormaPagamento.
+export interface CriarFormaPagamentoProps {
+  negocioId: string;
+  nome: string;
+  tipo?: TipoFormaPagamento | null;
+  exigeConfirmacaoManual?: boolean;
 }

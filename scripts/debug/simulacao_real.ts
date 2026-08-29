@@ -22,8 +22,7 @@ import { EstoqueVenda } from "../../src/Domain/estoque_venda/estoque_venda";
 import { PoliticaComercial } from "../../src/Domain/comercial/politica_comercial";
 import { CondicaoComercial } from "../../src/Domain/comercial/condicao_comercial";
 import { Orcamento } from "../../src/Domain/comercial/orcamento";
-import { Titulo } from "../../src/Domain/financeiro/titulo";
-import { Sinal } from "../../src/Domain/financeiro/sinal";
+import { TituloFinanceiro } from "../../src/Domain/financeiro/titulo_financeiro";
 import { Agenda } from "../../src/Domain/operacao/agenda";
 import { Agendamento } from "../../src/Domain/operacao/agendamento";
 import { OrdemServico } from "../../src/Domain/operacao/ordem_servico";
@@ -337,62 +336,63 @@ export function executarSimulacaoReal(): void {
   });
 
   // ==============================
-  // 7. FINANCEIRO — estrutura (etapa documentada, sem regras reais)
+  // 7. FINANCEIRO — título com sinal como parcela
   // ==============================
-  secao("7. FINANCEIRO — título e sinal (estrutura/stub)");
+  secao("7. FINANCEIRO — título financeiro com sinal como parcela");
 
-  console.log(
-    "Financeiro ainda está em estrutura (stub): Titulo.criar e Sinal.criar\n" +
-      "são envoltórios sem validação — etapa demonstrada como intenção, sem regras reais.",
-  );
-
-  const titulo = Titulo.criar({
-    id: randomUUID(),
+  const titulo = TituloFinanceiro.criar({
     negocioId: negocio.id,
     clienteId: cliente.id,
-    orcamentoId: orcamento.id,
+    origem: "ORCAMENTO",
+    origemId: orcamento.id,
     descricao: "Lavagem detalhada + higienização + aromatizante",
-    valorTotal: orcamento.valorTotal,
-    status: "ABERTO",
-    dataEmissao: new Date(),
+    valorOriginal: orcamento.valorTotal,
     dataVencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     parcelas: [
       {
-        id: randomUUID(),
-        tituloId: "titulo-pendente",
         numero: 1,
-        valor: orcamento.valorTotal,
-        status: "PENDENTE",
+        tipo: "SINAL",
+        descricao: "Sinal / Entrada",
+        valorOriginal: condicao.valorSinal ?? 0,
+        dataVencimento: new Date(),
+      },
+      {
+        numero: 2,
+        tipo: "PARCELA",
+        descricao: "Restante",
+        valorOriginal: orcamento.valorTotal - (condicao.valorSinal ?? 0),
         dataVencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        criadoEm: new Date(),
       },
     ],
-    criadoEm: new Date(),
-    atualizadoEm: new Date(),
   });
 
-  const sinal = Sinal.criar({
-    id: randomUUID(),
-    negocioId: negocio.id,
-    clienteId: cliente.id,
-    valor: condicao.valorSinal ?? 0,
-    status: "RECEBIDO",
-    observacoes: "Sinal de 30% via Pix",
-    criadoEm: new Date(),
-  });
+  const parcelaSinal = titulo.parcelas.find((p) => p.tipo === "SINAL");
+  const pagamentoSinalId = parcelaSinal
+    ? titulo.registrarPagamento({
+        parcelaFinanceiraId: parcelaSinal.id,
+        valor: condicao.valorSinal ?? 0,
+        formaPagamentoId: "fp-pix",
+        formaPagamentoDescricao: "PIX",
+      })
+    : null;
+  if (pagamentoSinalId) {
+    titulo.confirmarPagamento(pagamentoSinalId);
+  }
 
-  mostrar("Título (intenção: nasce do orçamento aceito via orcamentoId)", {
+  mostrar("Título (nasce do orçamento aceito via origem/origemId)", {
     id: titulo.id,
-    orcamentoId: titulo.orcamentoId,
+    origem: titulo.origem,
+    origemId: titulo.origemId,
     clienteId: titulo.clienteId,
     valorTotal: titulo.valorTotal,
     status: titulo.status,
   });
-  mostrar("Sinal (30% do orçamento, conforme a condição)", {
-    id: sinal.id,
-    clienteId: sinal.clienteId,
-    valor: sinal.valor,
-    status: sinal.status,
+  const parcelaSinalAtualizada = titulo.parcelas.find((p) => p.tipo === "SINAL");
+  mostrar("Sinal (parcela do tipo SINAL, conforme a condição)", {
+    parcelaId: parcelaSinalAtualizada?.id,
+    tipo: parcelaSinalAtualizada?.tipo,
+    valorOriginal: parcelaSinalAtualizada?.valorOriginal,
+    status: parcelaSinalAtualizada?.status,
   });
 
   // ==============================
@@ -587,7 +587,7 @@ export function executarSimulacaoReal(): void {
     agendamentoId: agendamento.id,
     ordemServicoId: ordem.id,
     tituloId: titulo.id,
-    sinalId: sinal.id,
+    sinalId: parcelaSinal?.id,
   });
   mostrar("Conexões por ID", {
     "cliente → veiculo": `veiculo.clienteId = ${veiculo.clienteId}`,
@@ -596,13 +596,13 @@ export function executarSimulacaoReal(): void {
     "estoque interno → produto": `estoqueShampoo.produtoId=${estoqueShampoo.produtoId}`,
     "estoque venda → produto": `estoqueAromatizante.produtoId=${estoqueAromatizante.produtoId}`,
     "reserva → orcamento": `reserva.referenciaId=${orcamento.id}, referenciaTipo=ORCAMENTO`,
-    "financeiro → orcamento": `titulo.orcamentoId=${titulo.orcamentoId}`,
+    "financeiro → orcamento": `titulo.origemId=${titulo.origemId}`,
   });
   mostrar("Resultado comercial", {
     orcamentoTotal: orcamento.valorTotal,
     orcamentoStatus: orcamento.status,
     aceiteCanal: orcamento.aceite?.canal,
-    sinalRecebido: sinal.valor,
+    sinalRecebido: parcelaSinal?.valorPago,
     ordemStatus: ordem.status,
     aromatizanteDisponivel: estoqueAromatizante.quantidadeDisponivel,
   });
