@@ -174,6 +174,25 @@ export class Orcamento {
     this.props.atualizadoEm = new Date();
   }
 
+  // Alterar observações é uma mudança de estado do orçamento: respeita a
+  // editabilidade (RASCUNHO/EM_ABERTO), registra histórico e atualiza
+  // atualizadoEm. null/vazio limpa o campo.
+  atualizarObservacoes(
+    observacoes: string | null,
+    dados?: DadosAlteracaoComercial,
+  ): void {
+    this.validarEditavel();
+    const novasObservacoes = observacoes?.trim() || null;
+    this.registrarAlteracao(
+      "observacoes",
+      this.props.observacoes,
+      novasObservacoes,
+      dados,
+    );
+    this.props.observacoes = novasObservacoes;
+    this.props.atualizadoEm = new Date();
+  }
+
   // ----- Ciclo de vida -----
 
   // Finaliza a montagem e libera o orçamento para aceite/recusa.

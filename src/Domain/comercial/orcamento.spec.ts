@@ -121,6 +121,35 @@ describe("Orcamento", () => {
     });
   });
 
+  describe("observações", () => {
+    it("atualiza as observações e registra histórico", () => {
+      const orcamento = criarOrcamento();
+      orcamento.atualizarObservacoes("cliente pediu desconto");
+
+      expect(orcamento.observacoes).toBe("cliente pediu desconto");
+      const alteracao = orcamento.alteracoes.find((a) => a.campo === "observacoes");
+      expect(alteracao?.valorNovo).toBe("cliente pediu desconto");
+    });
+
+    it("limpa as observações quando recebe null", () => {
+      const orcamento = criarOrcamento({ observacoes: "anotação inicial" });
+      orcamento.atualizarObservacoes(null);
+
+      expect(orcamento.observacoes).toBeNull();
+    });
+
+    it("não permite alterar observações após finalizar", () => {
+      const orcamento = criarOrcamento();
+      adicionarItens(orcamento);
+      orcamento.abrir();
+      orcamento.aceitar();
+
+      expect(() => orcamento.atualizarObservacoes("tarde")).toThrow(
+        ComercialError,
+      );
+    });
+  });
+
   describe("ciclo de vida", () => {
     it("abrir passa RASCUNHO → EM_ABERTO", () => {
       const orcamento = criarOrcamento();
