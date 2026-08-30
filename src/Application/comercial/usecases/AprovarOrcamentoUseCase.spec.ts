@@ -75,4 +75,26 @@ describe("AprovarOrcamentoUseCase", () => {
     ).rejects.toThrow(ComercialError);
     expect(salvar).not.toHaveBeenCalled();
   });
+
+  it("não aprova orçamento EM_ABERTO sem itens (regra do domínio) e não salva", async () => {
+    const orcamento = Orcamento.criar({
+      negocioId: "neg-1",
+      clienteId: "cli-1",
+      veiculoId: "vei-1",
+    });
+    orcamento.abrir();
+    const salvar = jest.fn();
+
+    const repositorio = {
+      buscarPorId: jest.fn().mockResolvedValue(orcamento),
+      salvar,
+    } as unknown as OrcamentosRepository;
+
+    const useCase = new AprovarOrcamentoUseCase(repositorio);
+
+    await expect(
+      useCase.executar({ negocioId: "neg-1", orcamentoId: orcamento.id }),
+    ).rejects.toThrow(ComercialError);
+    expect(salvar).not.toHaveBeenCalled();
+  });
 });
