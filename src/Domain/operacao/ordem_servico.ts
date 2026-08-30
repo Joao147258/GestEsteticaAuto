@@ -12,7 +12,7 @@ import { RegistroFotograficoProps, CriarRegistroFotograficoProps } from "./Regis
 import { ObservacaoTecnica } from "./observacao_tecnica";
 import { ObservacaoTecnicaProps, CriarObservacaoTecnicaProps } from "./ObservacaoTecnicaProps";
 import { StatusOrdemServico } from "./status_ordem_servico_types";
-import { DadosAlteracaoOperacao } from "./operacao_types";
+import { DadosAlteracaoOperacao, DadosAtualizacaoOperacionalOrdemServico } from "./operacao_types";
 
 // OrdemServico — agregado principal da operação.
 // Representa o trabalho que será executado no veículo (sem lógica comercial).
@@ -53,11 +53,20 @@ export class OrdemServico {
       pausadaEm: null,
       finalizadaEm: null,
       canceladaEm: null,
+      previsaoInicio: props.previsaoInicio ?? null,
+      previsaoConclusao: props.previsaoConclusao ?? null,
       observacoes: props.observacoes?.trim() || null,
       alteracoes: [],
       criadoEm: new Date(),
       atualizadoEm: new Date(),
     });
+  }
+
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio (ver ItemOrcamento.reconstituir); usado pelos mappers
+  // da Infrastructure ao carregar uma OS do banco (com itens). Não gera novo id.
+  static reconstituir(props: OrdemServicoProps): OrdemServico {
+    return new OrdemServico(props);
   }
 
   // ----- Itens (execução) -----
@@ -189,6 +198,33 @@ export class OrdemServico {
     }
     this.transicionar("CANCELADA", dados ?? { descricao: "ordem cancelada" });
     this.props.canceladaEm = new Date();
+    this.props.atualizadoEm = new Date();
+  }
+
+  // Atualiza dados operacionais simples (observações e previsões), sem mudar
+  // status — troca de status passa pelos métodos específicos (iniciar/pausar/
+  // retomar/concluir/cancelar). Segue o padrão do Orcamento.atualizarObservacoes:
+  // valida não encerrada, registra histórico e atualiza atualizadoEm.
+  // undefined preserva o valor atual; null limpa o campo.
+  atualizarDadosOperacionais(
+    dados: DadosAtualizacaoOperacionalOrdemServico,
+    dadosAlteracao?: DadosAlteracaoOperacao,
+  ): void {
+    this.validarNaoEncerrada();
+    const novasObservacoes = dados.observacoes?.trim() || null;
+    const novaPrevisaoInicio =
+      dados.previsaoInicio ?? this.props.previsaoInicio ?? null;
+    const novaPrevisaoConclusao =
+      dados.previsaoConclusao ?? this.props.previsaoConclusao ?? null;
+    this.registrarAlteracao(
+      "dadosOperacionais",
+      "",
+      "atualizados",
+      dadosAlteracao ?? { descricao: "dados operacionais atualizados" },
+    );
+    this.props.observacoes = novasObservacoes;
+    this.props.previsaoInicio = novaPrevisaoInicio;
+    this.props.previsaoConclusao = novaPrevisaoConclusao;
     this.props.atualizadoEm = new Date();
   }
 
@@ -390,6 +426,14 @@ export class OrdemServico {
 
   get canceladaEm(): Date | null | undefined {
     return this.props.canceladaEm;
+  }
+
+  get previsaoInicio(): Date | null | undefined {
+    return this.props.previsaoInicio;
+  }
+
+  get previsaoConclusao(): Date | null | undefined {
+    return this.props.previsaoConclusao;
   }
 
   get observacoes(): string | null | undefined {

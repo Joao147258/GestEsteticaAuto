@@ -2,5 +2,5 @@
 export type ConfirmarConsumoInsumosItemOSInput = {
   negocioId: string;
   ordemServicoId: string;
-  itemId: string;
+  itemOrdemServicoId: string;
 };

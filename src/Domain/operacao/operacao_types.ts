@@ -15,3 +15,11 @@ export interface DadosAlteracaoOperacao {
   alteradoPor?: string | null;
   descricao?: string | null;
 }
+
+// Dados operacionais editáveis de uma OrdemServico (sem mudança de status).
+// undefined preserva o valor atual; null limpa o campo (quando suportado).
+export interface DadosAtualizacaoOperacionalOrdemServico {
+  observacoes?: string | null;
+  previsaoInicio?: Date | null;
+  previsaoConclusao?: Date | null;
+}

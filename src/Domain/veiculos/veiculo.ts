@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { VeiculoError } from "./VeiculoError";
-import { VeiculoProps, CriarVeiculoProps } from "./VeiculoProps";
+import { VeiculoProps, CriarVeiculoProps, DadosAtualizacaoVeiculo } from "./VeiculoProps";
 
 // Veiculo do cliente — dados principais do automóvel.
 // Sem histórico de proprietário e sem validação real de placa nesta etapa.
@@ -47,6 +47,13 @@ export class Veiculo {
       criadoEm: new Date(),
       atualizadoEm: new Date(),
     });
+  }
+
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio (ver ItemOrcamento.reconstituir); usado pelos mappers
+  // da Infrastructure ao carregar um veículo do banco. Não gera novo id.
+  static reconstituir(props: VeiculoProps): Veiculo {
+    return new Veiculo(props);
   }
 
   // Padrão dos métodos de alteração: normalizar (trim) → validar o obrigatório
@@ -151,6 +158,51 @@ export class Veiculo {
 
     this.props.quilometragem = quilometragem;
     this.props.atualizadoEm = new Date();
+  }
+
+  alterarObservacoes(observacoes: string | null): void {
+    const observacoesNormalizadas = observacoes?.trim() || null;
+
+    this.registrarAlteracao(
+      "observacoes",
+      this.props.observacoes,
+      observacoesNormalizadas,
+      "Observações do veículo alteradas",
+    );
+
+    this.props.observacoes = observacoesNormalizadas;
+    this.props.atualizadoEm = new Date();
+  }
+
+  // Atualização em lote de dados cadastrais simples: delega a cada método
+  // específico existente (cada um com sua validação e histórico). Não inclui
+  // clienteId — trocar o dono é ação específica via vincularCliente.
+  // undefined preserva o valor atual; null limpa o campo (quando suportado).
+  atualizarDados(dados: DadosAtualizacaoVeiculo): void {
+    if (dados.placa !== undefined) {
+      this.alterarPlaca(dados.placa);
+    }
+    if (dados.marca !== undefined) {
+      this.alterarMarca(dados.marca);
+    }
+    if (dados.modelo !== undefined) {
+      this.alterarModelo(dados.modelo);
+    }
+    if (dados.anoFabricacao !== undefined) {
+      this.alterarAnoFabricacao(dados.anoFabricacao);
+    }
+    if (dados.anoModelo !== undefined) {
+      this.alterarAnoModelo(dados.anoModelo);
+    }
+    if (dados.cor !== undefined) {
+      this.alterarCor(dados.cor);
+    }
+    if (dados.quilometragem !== undefined) {
+      this.alterarKm(dados.quilometragem);
+    }
+    if (dados.observacoes !== undefined) {
+      this.alterarObservacoes(dados.observacoes);
+    }
   }
 
   // Vincula o veículo a outro cliente — decisão: o veículo não é deletado nem

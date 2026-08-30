@@ -54,6 +54,13 @@ export class Produto {
     });
   }
 
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio (ver ItemOrcamento.reconstituir); usado pelos mappers
+  // da Infrastructure ao carregar um produto do banco. Não gera novo id.
+  static reconstituir(props: ProdutoProps): Produto {
+    return new Produto(props);
+  }
+
   // --- Registro de alterações (histórico flexível) ---
 
   private registrarAlteracao(

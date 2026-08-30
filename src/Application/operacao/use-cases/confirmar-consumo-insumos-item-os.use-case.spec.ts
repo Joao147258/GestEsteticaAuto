@@ -95,7 +95,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(estoque.quantidadeAtual).toBe(50);
@@ -133,7 +133,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     // 50 ML → 0.05 LITRO baixado do estoque em LITRO.
@@ -165,7 +165,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(estoque.quantidadeAtual).toBe(4);
@@ -200,7 +200,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     // Saldo permanece intacto e nenhuma persistência é feita para o insumo.
@@ -240,7 +240,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(resultado.custoEstimado).toBe(18.5);
@@ -274,7 +274,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     // Estoque sem custo → usa custoReferencia do produto (2 × 12).
@@ -308,7 +308,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(resultado.custoEstimado).toBe(0);
@@ -331,7 +331,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
       useCase.execute({
         negocioId: "neg-1",
         ordemServicoId: "os-inexistente",
-        itemId: "item-1",
+        itemOrdemServicoId: "item-1",
       }),
     ).rejects.toThrow(NotFoundError);
   });
@@ -353,7 +353,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
       useCase.execute({
         negocioId: "neg-1",
         ordemServicoId: ordemServico.id,
-        itemId: "item-inexistente",
+        itemOrdemServicoId: "item-inexistente",
       }),
     ).rejects.toThrow(NotFoundError);
   });
@@ -385,7 +385,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(resultado.jaRegistrados).toEqual([{ produtoId: "prod-1" }]);
@@ -416,7 +416,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(repos.estoquesRepository.existeMovimentacaoPorOrigem).toHaveBeenCalledWith({
@@ -492,7 +492,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     // Shampoo baixado, APC insuficiente, microfibra já registrada.
@@ -536,7 +536,7 @@ describe("ConfirmarConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(resultado.realizados).toHaveLength(1);

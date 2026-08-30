@@ -29,6 +29,8 @@ export interface OrdemServicoProps {
   pausadaEm?: Date | null;
   finalizadaEm?: Date | null;
   canceladaEm?: Date | null;
+  previsaoInicio?: Date | null;
+  previsaoConclusao?: Date | null;
   observacoes?: string | null;
   alteracoes: RegistroAlteracaoOperacao[];
   criadoEm: Date;
@@ -46,4 +48,6 @@ export interface CriarOrdemServicoProps {
   numero?: string | null;
   responsavelId?: string | null;
   observacoes?: string | null;
+  previsaoInicio?: Date | null;
+  previsaoConclusao?: Date | null;
 }

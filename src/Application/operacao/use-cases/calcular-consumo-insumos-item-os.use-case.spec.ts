@@ -53,7 +53,7 @@ describe("CalcularConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(resultado).toEqual([
@@ -89,7 +89,7 @@ describe("CalcularConsumoInsumosItemOSUseCase", () => {
     await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     // Nenhum método de escrita é acionado no fluxo de cálculo.
@@ -115,7 +115,7 @@ describe("CalcularConsumoInsumosItemOSUseCase", () => {
     const resultado = await useCase.execute({
       negocioId: "neg-1",
       ordemServicoId: ordemServico.id,
-      itemId,
+      itemOrdemServicoId: itemId,
     });
 
     expect(resultado).toEqual([]);
@@ -139,7 +139,7 @@ describe("CalcularConsumoInsumosItemOSUseCase", () => {
       useCase.execute({
         negocioId: "neg-1",
         ordemServicoId: "os-inexistente",
-        itemId: "item-1",
+        itemOrdemServicoId: "item-1",
       }),
     ).rejects.toThrow(NotFoundError);
   });
@@ -162,7 +162,7 @@ describe("CalcularConsumoInsumosItemOSUseCase", () => {
       useCase.execute({
         negocioId: "neg-1",
         ordemServicoId: ordemServico.id,
-        itemId: "item-inexistente",
+        itemOrdemServicoId: "item-inexistente",
       }),
     ).rejects.toThrow(NotFoundError);
   });

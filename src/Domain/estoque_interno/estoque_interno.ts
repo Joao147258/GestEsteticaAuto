@@ -73,6 +73,13 @@ export class EstoqueInterno {
     return estoque;
   }
 
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar e
+  // sem gerar movimentações). Usado pelos mappers da Infrastructure ao carregar
+  // o estoque com seu histórico de movimentações do banco.
+  static reconstituir(props: EstoqueInternoProps): EstoqueInterno {
+    return new EstoqueInterno(props);
+  }
+
   // ----- Ações que movimentam o estoque -----
 
   // Entrada de produto (compra, reposição, devolução interna).

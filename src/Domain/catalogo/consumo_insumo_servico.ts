@@ -48,6 +48,13 @@ export class ConsumoInsumoServico {
     });
   }
 
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio (ver ItemOrcamento.reconstituir); usado pelos mappers
+  // da Infrastructure ao carregar um consumo do banco. Não gera novo id.
+  static reconstituir(props: ConsumoInsumoServicoProps): ConsumoInsumoServico {
+    return new ConsumoInsumoServico(props);
+  }
+
   // --- Getters ---
 
   get id(): string {

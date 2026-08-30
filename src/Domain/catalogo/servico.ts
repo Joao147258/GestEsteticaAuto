@@ -44,6 +44,13 @@ export class Servico {
     });
   }
 
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio (ver ItemOrcamento.reconstituir); usado pelos mappers
+  // da Infrastructure ao carregar um serviço do banco. Não gera novo id.
+  static reconstituir(props: ServicoProps): Servico {
+    return new Servico(props);
+  }
+
   // --- Registro de alterações (histórico flexível) ---
 
   private registrarAlteracao(

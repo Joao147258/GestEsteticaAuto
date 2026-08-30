@@ -48,3 +48,16 @@ export interface CriarVeiculoProps {
   quilometragem?: number | null;
   observacoes?: string | null;
 }
+
+// Dados operacionais editáveis de um Veiculo (sem troca de cliente — isso é
+// ação específica via vincularCliente). undefined preserva o valor atual.
+export interface DadosAtualizacaoVeiculo {
+  placa?: string | null;
+  marca?: string;
+  modelo?: string;
+  anoFabricacao?: number;
+  anoModelo?: number;
+  cor?: string | null;
+  quilometragem?: number;
+  observacoes?: string | null;
+}

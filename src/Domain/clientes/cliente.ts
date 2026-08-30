@@ -9,7 +9,7 @@ export class Cliente {
   private constructor(private readonly props: ClienteProps) {}
 
   // --- Criação ---
-
+ 
   // Decisões da criação: obrigatórios são negocioId, nome e tipo; campos
   // opcionais são normalizados (trim) e viram null quando vazios; status
   // inicial ATIVO; listas de composição e histórico começam vazias.
@@ -24,7 +24,7 @@ export class Cliente {
     }
     if (!props.tipo) {
       throw new ClienteError("Tipo de cliente é obrigatório");
-    }
+    } 
 
     const agora = new Date();
 
@@ -48,6 +48,13 @@ export class Cliente {
       criadoEm: agora,
       atualizadoEm: agora,
     });
+  }
+
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio (ver ItemOrcamento.reconstituir); usado pelos mappers
+  // da Infrastructure ao carregar um cliente do banco. Não gera novo id.
+  static reconstituir(props: ClienteProps): Cliente {
+    return new Cliente(props);
   }
 
   // --- Registro de alterações (histórico flexível) ---

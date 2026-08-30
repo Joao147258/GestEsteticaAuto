@@ -21,6 +21,13 @@ export class MovimentacaoEstoqueInterno {
     return new MovimentacaoEstoqueInterno(props);
   }
 
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio; usado pelos mappers da Infrastructure ao carregar o
+  // histórico de movimentações do banco.
+  static reconstituir(props: MovimentacaoEstoqueInternoProps): MovimentacaoEstoqueInterno {
+    return new MovimentacaoEstoqueInterno(props);
+  }
+
   // Projeção da entidade de volta para dados puros (composição por Props).
   toProps(): MovimentacaoEstoqueInternoProps {
     return { ...this.props };

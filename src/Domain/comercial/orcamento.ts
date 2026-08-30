@@ -52,6 +52,14 @@ export class Orcamento {
     });
   }
 
+  // Reconstitui a entidade a partir de dados já persistidos (sem revalidar).
+  // Padrão do domínio (ver ItemOrcamento.reconstituir); usado pelos mappers
+  // da Infrastructure ao carregar um orçamento do banco (inclui itens e o
+  // aceite mais recente). Não gera novo id.
+  static reconstituir(props: OrcamentoProps): Orcamento {
+    return new Orcamento(props);
+  }
+
   // ----- Montagem do orçamento (RASCUNHO / EM_ABERTO) -----
 
   // O orçamento injeta negocioId/orcamentoId — o chamador não precisa informá-los.

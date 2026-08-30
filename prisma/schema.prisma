@@ -41,29 +41,35 @@ model Negocio {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  usuarios            Usuario[]
-  clientes            Cliente[]
-  veiculos            Veiculo[]
-  origensCliente      OrigemCliente[]
-  tagsCliente         TagCliente[]
-  categoriasServico   CategoriaServico[]
-  servicos            Servico[]
-  categoriasProduto   CategoriaProduto[]
-  produtos            Produto[]
-  pacotesServico      PacoteServico[]
-  tabelasPreco        TabelaPreco[]
-  orcamentos          Orcamento[]
-  politicasComerciais PoliticaComercial[]
-  condicoesComerciais CondicaoComercial[]
-  ordensServico       OrdemServico[]
-  agendas             Agenda[]
-  agendamentos        Agendamento[]
-  titulos             Titulo[]
-  formasPagamento     FormaPagamento[]
-  sinais              Sinal[]
-  estoques            Estoque[]
-  auditorias          Auditoria[]
-  anexos              Anexo[]
+  usuarios                    Usuario[]
+  clientes                    Cliente[]
+  veiculos                    Veiculo[]
+  origensCliente              OrigemCliente[]
+  tagsCliente                 TagCliente[]
+  categoriasServico           CategoriaServico[]
+  servicos                    Servico[]
+  categoriasProduto           CategoriaProduto[]
+  produtos                    Produto[]
+  pacotesServico              PacoteServico[]
+  tabelasPreco                TabelaPreco[]
+  orcamentos                  Orcamento[]
+  politicasComerciais         PoliticaComercial[]
+  condicoesComerciais         CondicaoComercial[]
+  aceitesOrcamento            AceiteOrcamento[]
+  ordensServico               OrdemServico[]
+  agendas                     Agenda[]
+  agendamentos                Agendamento[]
+  titulos                     Titulo[]
+  formasPagamento             FormaPagamento[]
+  estoquesVenda               EstoqueVenda[]
+  estoquesInterno             EstoqueInterno[]
+  consumosInsumo              ConsumoInsumoServico[]
+  movimentacoesEstoqueInterno MovimentacaoEstoqueInterno[]
+  itemOrdemServicos           ItemOrdemServico[]
+  pagamentos                  Pagamento[]
+  auditorias                  Auditoria[]
+  anexos                      Anexo[]
+  itemOrcamentos              ItemOrcamento[]
 }
 
 model Usuario {
@@ -101,19 +107,19 @@ model Cliente {
   criadoEm     DateTime   @default(now())
   atualizadoEm DateTime   @updatedAt
 
-  negocio       Negocio              @relation(fields: [negocioId], references: [id], onDelete: Cascade)
-  origem        OrigemCliente?       @relation(fields: [origemId], references: [id], onDelete: SetNull)
-  contatos      Contato[]
-  enderecos     Endereco[]
-  preferencias  PreferenciaCliente[]
-  tags          TagCliente[]
-  anexos        AnexoCliente[]
-  veiculos      Veiculo[]
-  orcamentos    Orcamento[]
-  ordensServico OrdemServico[]
-  agendamentos  Agendamento[]
-  titulos       Titulo[]
-  sinais        Sinal[]
+  negocio          Negocio              @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  origem           OrigemCliente?       @relation(fields: [origemId], references: [id], onDelete: SetNull)
+  contatos         Contato[]
+  enderecos        Endereco[]
+  preferencias     PreferenciaCliente[]
+  tags             TagCliente[]
+  anexos           AnexoCliente[]
+  veiculos         Veiculo[]
+  orcamentos       Orcamento[]
+  ordensServico    OrdemServico[]
+  agendamentos     Agendamento[]
+  titulos          Titulo[]
+  aceitesOrcamento AceiteOrcamento[]
 
   @@index([negocioId])
   @@index([negocioId, status])
@@ -262,15 +268,17 @@ model Servico {
   descricao          String?
   precoBase          Decimal? @db.Decimal(10, 2)
   duracaoMinutos     Int?
+  observacoes        String?
   status             String   @default("ATIVO")
   criadoEm           DateTime @default(now())
   atualizadoEm       DateTime @updatedAt
 
-  negocio           Negocio            @relation(fields: [negocioId], references: [id], onDelete: Cascade)
-  categoria         CategoriaServico?  @relation(fields: [categoriaServicoId], references: [id], onDelete: SetNull)
+  negocio           Negocio                @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  categoria         CategoriaServico?      @relation(fields: [categoriaServicoId], references: [id], onDelete: SetNull)
   itensOrcamento    ItemOrcamento[]
   itensOrdemServico ItemOrdemServico[]
   pacotes           PacoteServico[]
+  consumosInsumo    ConsumoInsumoServico[]
 
   @@index([negocioId])
   @@index([categoriaServicoId])
@@ -296,6 +304,16 @@ model Produto {
   categoriaProdutoId String?
   nome               String
   descricao          String?
+  // Campos do domínio (ProdutoProps): tipoUso e unidadeMedida são
+  // obrigatórios; custo/preço sugerido e observações são opcionais.
+  tipoUso            String   @default("INSUMO_INTERNO")
+  unidadeMedida      String   @default("UNIDADE")
+  custoReferencia    Decimal? @db.Decimal(10, 2)
+  precoVendaSugerido Decimal? @db.Decimal(10, 2)
+  observacoes        String?
+  // Campos legados (não usados pelo domínio na V1, mantidos por segurança):
+  // preco (preço simples, sem conceito no Domain), codigoBarras e
+  // estoqueMinimo (o mínimo de estoque pertence a EstoqueInterno).
   preco              Decimal? @db.Decimal(10, 2)
   codigoBarras       String?
   estoqueMinimo      Int?
@@ -303,14 +321,41 @@ model Produto {
   criadoEm           DateTime @default(now())
   atualizadoEm       DateTime @updatedAt
 
-  negocio           Negocio            @relation(fields: [negocioId], references: [id], onDelete: Cascade)
-  categoria         CategoriaProduto?  @relation(fields: [categoriaProdutoId], references: [id], onDelete: SetNull)
-  itensOrcamento    ItemOrcamento[]
-  itensOrdemServico ItemOrdemServico[]
-  estoques          Estoque[]
+  negocio                     Negocio                      @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  categoria                   CategoriaProduto?            @relation(fields: [categoriaProdutoId], references: [id], onDelete: SetNull)
+  itensOrcamento              ItemOrcamento[]
+  itensOrdemServico           ItemOrdemServico[]
+  estoquesVenda               EstoqueVenda[]
+  estoquesInterno             EstoqueInterno[]
+  consumosInsumo              ConsumoInsumoServico[]
+  movimentacoesEstoqueInterno MovimentacaoEstoqueInterno[]
 
   @@index([negocioId])
   @@index([categoriaProdutoId])
+}
+
+// ConsumoInsumoServico — quanto de um insumo (produto) um serviço consome por
+// execução. Mapeia a entidade ConsumoInsumoServico do Domain. A unicidade
+// (negocioId, servicoId, produtoId) evita configurar o mesmo insumo duas
+// vezes para o mesmo serviço (pendência de backlog resolvida).
+model ConsumoInsumoServico {
+  id            String   @id @default(cuid())
+  negocioId     String
+  servicoId     String
+  produtoId     String
+  quantidade    Decimal  @db.Decimal(10, 3)
+  unidadeMedida String
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  negocio Negocio @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  servico Servico @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  @@unique([negocioId, servicoId, produtoId])
+  @@index([negocioId])
+  @@index([servicoId])
+  @@index([produtoId])
 }
 
 model PacoteServico {
@@ -350,64 +395,92 @@ model TabelaPreco {
 // ============================================================================
 
 model Orcamento {
-  id           String   @id @default(cuid())
-  negocioId    String
-  clienteId    String
-  veiculoId    String?
-  numero       String?
-  status       String   @default("RASCUNHO")
-  observacoes  String?
-  validadeDias Int?
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  id                  String    @id @default(cuid())
+  negocioId           String
+  clienteId           String
+  veiculoId           String?
+  numero              String?
+  politicaComercialId String?
+  condicaoComercialId String?
+  status              String    @default("RASCUNHO")
+  observacoes         String?
+  subtotal            Decimal   @default(0) @db.Decimal(10, 2)
+  valorDesconto       Decimal   @default(0) @db.Decimal(10, 2)
+  valorAcrescimo      Decimal   @default(0) @db.Decimal(10, 2)
+  valorTotal          Decimal   @default(0) @db.Decimal(10, 2)
+  validoAte           DateTime?
+  validadeDias        Int?
+  criadoEm            DateTime  @default(now())
+  atualizadoEm        DateTime  @updatedAt
 
-  negocio      Negocio           @relation(fields: [negocioId], references: [id], onDelete: Cascade)
-  cliente      Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  veiculo      Veiculo?          @relation(fields: [veiculoId], references: [id], onDelete: SetNull)
+  negocio      Negocio            @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  cliente      Cliente            @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  veiculo      Veiculo?           @relation(fields: [veiculoId], references: [id], onDelete: SetNull)
+  politica     PoliticaComercial? @relation(fields: [politicaComercialId], references: [id], onDelete: SetNull)
+  condicao     CondicaoComercial? @relation(fields: [condicaoComercialId], references: [id], onDelete: SetNull)
   itens        ItemOrcamento[]
   aceites      AceiteOrcamento[]
   ordemServico OrdemServico?
-  titulos      Titulo[]
 
   @@index([negocioId])
   @@index([clienteId])
   @@index([veiculoId])
+  @@index([politicaComercialId])
+  @@index([condicaoComercialId])
   @@index([negocioId, status])
 }
 
 model ItemOrcamento {
   id            String   @id @default(cuid())
+  negocioId     String
   orcamentoId   String
   servicoId     String?
   produtoId     String?
+  tipo          String   @default("SERVICO")
   descricao     String?
-  quantidade    Int      @default(1)
+  quantidade    Decimal  @default(1) @db.Decimal(10, 3)
   valorUnitario Decimal  @db.Decimal(10, 2)
+  valorTotal    Decimal  @default(0) @db.Decimal(10, 2)
   desconto      Decimal? @db.Decimal(10, 2)
+  observacoes   String?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
 
+  negocio   Negocio   @relation(fields: [negocioId], references: [id], onDelete: Cascade)
   orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
   servico   Servico?  @relation(fields: [servicoId], references: [id], onDelete: SetNull)
   produto   Produto?  @relation(fields: [produtoId], references: [id], onDelete: SetNull)
 
+  @@index([negocioId])
   @@index([orcamentoId])
   @@index([servicoId])
   @@index([produtoId])
 }
 
 model AceiteOrcamento {
-  id          String    @id @default(cuid())
-  orcamentoId String
-  status      String    @default("PENDENTE")
-  assinatura  String?
-  aceitoEm    DateTime?
-  enviadoEm   DateTime?
-  expiradoEm  DateTime?
-  ip          String?
-  criadoEm    DateTime  @default(now())
+  id           String    @id @default(cuid())
+  negocioId    String
+  orcamentoId  String
+  clienteId    String
+  status       String    @default("PENDENTE")
+  canal        String?
+  assinatura   String?
+  aceitoEm     DateTime?
+  recusadoEm   DateTime?
+  observacoes  String?
+  enviadoEm    DateTime?
+  expiradoEm   DateTime?
+  ip           String?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
 
+  negocio   Negocio   @relation(fields: [negocioId], references: [id], onDelete: Cascade)
   orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
+  @@index([negocioId])
   @@index([orcamentoId])
+  @@index([clienteId])
 }
 
 model PoliticaComercial {
@@ -420,7 +493,8 @@ model PoliticaComercial {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  negocio Negocio @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  negocio    Negocio     @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  orcamentos Orcamento[]
 
   @@index([negocioId])
 }
@@ -436,7 +510,8 @@ model CondicaoComercial {
   criadoEm      DateTime @default(now())
   atualizadoEm  DateTime @updatedAt
 
-  negocio Negocio @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  negocio    Negocio     @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  orcamentos Orcamento[]
 
   @@index([negocioId])
 }
@@ -446,18 +521,30 @@ model CondicaoComercial {
 // ============================================================================
 
 model OrdemServico {
-  id           String    @id @default(cuid())
-  negocioId    String
-  clienteId    String
-  veiculoId    String
-  orcamentoId  String?   @unique
-  numero       String?
-  status       String    @default("ABERTA")
-  observacoes  String?
-  dataInicio   DateTime?
-  dataFim      DateTime?
-  criadoEm     DateTime  @default(now())
-  atualizadoEm DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  negocioId         String
+  clienteId         String
+  veiculoId         String
+  orcamentoId       String?   @unique
+  agendamentoId     String?
+  numero            String?
+  responsavelId     String?
+  status            String    @default("ABERTA")
+  observacoes       String?
+  abertaEm          DateTime  @default(now())
+  iniciadaEm        DateTime?
+  pausadaEm         DateTime?
+  finalizadaEm      DateTime?
+  canceladaEm       DateTime?
+  previsaoInicio    DateTime?
+  previsaoConclusao DateTime?
+  // Campos legados (não usados pelo domínio na V1, mantidos por segurança):
+  // dataInicio e dataFim eram o controle de datas antes dos timestamps
+  // específicos (abertaEm/iniciadaEm/finalizadaEm).
+  dataInicio        DateTime?
+  dataFim           DateTime?
+  criadoEm          DateTime  @default(now())
+  atualizadoEm      DateTime  @updatedAt
 
   negocio               Negocio               @relation(fields: [negocioId], references: [id], onDelete: Cascade)
   cliente               Cliente               @relation(fields: [clienteId], references: [id], onDelete: Cascade)
@@ -467,8 +554,6 @@ model OrdemServico {
   inspecaoEntrada       InspecaoEntrada?
   registrosFotograficos RegistroFotografico[]
   observacoesTecnicas   ObservacaoTecnica[]
-  reservasProdutos      ReservaProduto[]
-  titulos               Titulo[]
 
   @@index([negocioId])
   @@index([clienteId])
@@ -478,20 +563,32 @@ model OrdemServico {
 }
 
 model ItemOrdemServico {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
+  negocioId      String
   ordemServicoId String
   servicoId      String?
-  produtoId      String?
   descricao      String?
-  quantidade     Int      @default(1)
-  valorUnitario  Decimal  @db.Decimal(10, 2)
-  desconto       Decimal? @db.Decimal(10, 2)
-  status         String   @default("PENDENTE")
+  responsavelId  String?
+  status         String    @default("PENDENTE")
+  iniciadoEm     DateTime?
+  finalizadoEm   DateTime?
+  observacoes    String?
+  criadoEm       DateTime  @default(now())
+  atualizadoEm   DateTime  @updatedAt
+  // Campos legados (não usados pelo domínio na V1, mantidos por segurança):
+  // produtoId, quantidade, valorUnitario e desconto eram uma visão comercial
+  // do item; o domínio da operação trata o item apenas como execução.
+  produtoId      String?
+  quantidade     Int       @default(1)
+  valorUnitario  Decimal?  @db.Decimal(10, 2)
+  desconto       Decimal?  @db.Decimal(10, 2)
 
+  negocio      Negocio      @relation(fields: [negocioId], references: [id], onDelete: Cascade)
   ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
   servico      Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
   produto      Produto?     @relation(fields: [produtoId], references: [id], onDelete: SetNull)
 
+  @@index([negocioId])
   @@index([ordemServicoId])
   @@index([servicoId])
   @@index([produtoId])
@@ -596,12 +693,14 @@ model ObservacaoTecnica {
 // ============================================================================
 
 model FormaPagamento {
-  id        String              @id @default(cuid())
-  negocioId String
-  nome      String
-  tipo      TipoFormaPagamento?
-  status    String              @default("ATIVA")
-  criadoEm  DateTime            @default(now())
+  id                     String              @id @default(cuid())
+  negocioId              String
+  nome                   String
+  tipo                   TipoFormaPagamento?
+  exigeConfirmacaoManual Boolean             @default(false)
+  status                 String              @default("ATIVA")
+  criadoEm               DateTime            @default(now())
+  atualizadoEm           DateTime            @updatedAt
 
   negocio    Negocio     @relation(fields: [negocioId], references: [id], onDelete: Cascade)
   pagamentos Pagamento[]
@@ -610,40 +709,48 @@ model FormaPagamento {
 }
 
 model Titulo {
-  id             String    @id @default(cuid())
-  negocioId      String
-  clienteId      String
-  orcamentoId    String?
-  ordemServicoId String?
-  descricao      String?
-  valorTotal     Decimal   @db.Decimal(10, 2)
-  status         String    @default("ABERTO")
-  dataEmissao    DateTime  @default(now())
-  dataVencimento DateTime?
-  criadoEm       DateTime  @default(now())
-  atualizadoEm   DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  negocioId          String
+  origem             String
+  origemId           String?
+  clienteId          String?
+  fornecedorId       String?
+  descricao          String
+  valorOriginal      Decimal   @db.Decimal(10, 2)
+  valorDesconto      Decimal   @default(0) @db.Decimal(10, 2)
+  valorAcrescimo     Decimal   @default(0) @db.Decimal(10, 2)
+  status             String    @default("ABERTO")
+  dataEmissao        DateTime  @default(now())
+  dataVencimento     DateTime?
+  observacoes        String?
+  canceladoEm        DateTime?
+  motivoCancelamento String?
+  criadoEm           DateTime  @default(now())
+  atualizadoEm       DateTime  @updatedAt
 
-  negocio      Negocio       @relation(fields: [negocioId], references: [id], onDelete: Cascade)
-  cliente      Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  orcamento    Orcamento?    @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)
-  ordemServico OrdemServico? @relation(fields: [ordemServicoId], references: [id], onDelete: SetNull)
-  parcelas     Parcela[]
-  pagamentos   Pagamento[]
+  negocio    Negocio                    @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  cliente    Cliente?                   @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  parcelas   Parcela[]
+  pagamentos Pagamento[]
+  alteracoes TituloAlteracaoHistorico[]
 
   @@index([negocioId])
   @@index([clienteId])
   @@index([status])
+  @@index([origem, origemId])
 }
 
 model Parcela {
-  id             String    @id @default(cuid())
+  id             String      @id @default(cuid())
   tituloId       String
   numero         Int
-  valor          Decimal   @db.Decimal(10, 2)
-  status         String    @default("PENDENTE")
+  tipo           TipoParcela @default(PARCELA)
+  descricao      String?
+  valorOriginal  Decimal     @db.Decimal(10, 2)
+  status         String      @default("PENDENTE")
   dataVencimento DateTime?
-  dataPagamento  DateTime?
-  criadoEm       DateTime  @default(now())
+  criadoEm       DateTime    @default(now())
+  atualizadoEm   DateTime    @updatedAt
 
   titulo     Titulo      @relation(fields: [tituloId], references: [id], onDelete: Cascade)
   pagamentos Pagamento[]
@@ -653,91 +760,161 @@ model Parcela {
 }
 
 model Pagamento {
-  id               String   @id @default(cuid())
-  tituloId         String?
-  parcelaId        String?
-  formaPagamentoId String?
-  valor            Decimal  @db.Decimal(10, 2)
-  status           String   @default("REALIZADO")
-  dataPagamento    DateTime @default(now())
-  observacoes      String?
-  criadoEm         DateTime @default(now())
+  id                      String    @id @default(cuid())
+  negocioId               String
+  tituloId                String
+  parcelaId               String
+  formaPagamentoId        String
+  formaPagamentoDescricao String
+  valor                   Decimal   @db.Decimal(10, 2)
+  status                  String    @default("PENDENTE")
+  dataPagamento           DateTime  @default(now())
+  confirmadoEm            DateTime?
+  canceladoEm             DateTime?
+  motivoCancelamento      String?
+  observacoes             String?
+  criadoEm                DateTime  @default(now())
 
-  titulo         Titulo?         @relation(fields: [tituloId], references: [id], onDelete: Cascade)
-  parcela        Parcela?        @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
-  formaPagamento FormaPagamento? @relation(fields: [formaPagamentoId], references: [id], onDelete: SetNull)
+  titulo         Titulo         @relation(fields: [tituloId], references: [id], onDelete: Cascade)
+  parcela        Parcela        @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
+  formaPagamento FormaPagamento @relation(fields: [formaPagamentoId], references: [id], onDelete: Restrict)
+  negocio        Negocio        @relation(fields: [negocioId], references: [id], onDelete: Cascade)
 
+  @@index([negocioId])
   @@index([tituloId])
   @@index([parcelaId])
   @@index([formaPagamentoId])
 }
 
-model Sinal {
-  id          String   @id @default(cuid())
-  negocioId   String
-  clienteId   String?
-  valor       Decimal  @db.Decimal(10, 2)
-  status      String   @default("PENDENTE")
-  observacoes String?
-  criadoEm    DateTime @default(now())
+model TituloAlteracaoHistorico {
+  id        String   @id @default(cuid())
+  tituloId  String
+  tipo      String
+  descricao String
+  autorId   String?
+  data      DateTime @default(now())
 
-  negocio Negocio  @relation(fields: [negocioId], references: [id], onDelete: Cascade)
-  cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  titulo Titulo @relation(fields: [tituloId], references: [id], onDelete: Cascade)
 
-  @@index([negocioId])
-  @@index([clienteId])
+  @@index([tituloId])
+  @@index([tipo])
 }
 
 // ============================================================================
 // ESTOQUE
 // ============================================================================
 
-model Estoque {
-  id               String   @id @default(cuid())
-  negocioId        String
-  produtoId        String
-  quantidade       Int      @default(0)
-  quantidadeMinima Int?
-  criadoEm         DateTime @default(now())
-  atualizadoEm     DateTime @updatedAt
+model EstoqueVenda {
+  id                  String   @id @default(cuid())
+  negocioId           String
+  produtoId           String
+  quantidadeAtual     Int      @default(0)
+  quantidadeReservada Int      @default(0)
+  unidadeMedida       String   @default("UNIDADE")
+  custoUnitario       Decimal? @db.Decimal(10, 2)
+  precoVenda          Decimal? @db.Decimal(10, 2)
+  estoqueMinimo       Int?
+  observacoes         String?
+  criadoEm            DateTime @default(now())
+  atualizadoEm        DateTime @updatedAt
 
-  negocio       Negocio               @relation(fields: [negocioId], references: [id], onDelete: Cascade)
-  produto       Produto               @relation(fields: [produtoId], references: [id], onDelete: Cascade)
-  movimentacoes MovimentacaoEstoque[]
-  reservas      ReservaProduto[]
+  negocio       Negocio                    @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  produto       Produto                    @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  movimentacoes MovimentacaoEstoqueVenda[]
+  reservas      ReservaEstoqueVenda[]
 
   @@unique([produtoId])
   @@index([negocioId])
 }
 
-model MovimentacaoEstoque {
-  id         String                  @id @default(cuid())
-  estoqueId  String
-  tipo       TipoMovimentacaoEstoque
-  quantidade Int
-  motivo     String?
-  referencia String?
-  criadoEm   DateTime                @default(now())
+model MovimentacaoEstoqueVenda {
+  id                          String   @id @default(cuid())
+  estoqueVendaId              String
+  tipo                        String
+  quantidade                  Int
+  unidadeMedida               String
+  quantidadeAnterior          Int
+  quantidadeNova              Int
+  quantidadeReservadaAnterior Int?
+  quantidadeReservadaNova     Int?
+  motivo                      String?
+  referenciaId                String?
+  referenciaTipo              String?
+  registradoEm                DateTime @default(now())
 
-  estoque Estoque @relation(fields: [estoqueId], references: [id], onDelete: Cascade)
+  estoqueVenda EstoqueVenda @relation(fields: [estoqueVendaId], references: [id], onDelete: Cascade)
 
-  @@index([estoqueId])
-  @@index([criadoEm])
+  @@index([estoqueVendaId])
+  @@index([registradoEm])
+  @@index([referenciaId, referenciaTipo])
 }
 
-model ReservaProduto {
+model ReservaEstoqueVenda {
   id             String   @id @default(cuid())
-  estoqueId      String
-  ordemServicoId String?
+  estoqueVendaId String
   quantidade     Int
-  status         String   @default("RESERVADO")
+  unidadeMedida  String
+  status         String   @default("ATIVA")
+  referenciaId   String?
+  referenciaTipo String?
+  observacoes    String?
   criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
 
-  estoque      Estoque       @relation(fields: [estoqueId], references: [id], onDelete: Cascade)
-  ordemServico OrdemServico? @relation(fields: [ordemServicoId], references: [id], onDelete: SetNull)
+  estoqueVenda EstoqueVenda @relation(fields: [estoqueVendaId], references: [id], onDelete: Cascade)
 
-  @@index([estoqueId])
-  @@index([ordemServicoId])
+  @@index([estoqueVendaId])
+  @@index([referenciaId, referenciaTipo])
+}
+
+model EstoqueInterno {
+  id                      String   @id @default(cuid())
+  negocioId               String
+  produtoId               String
+  quantidadeAtual         Decimal  @default(0) @db.Decimal(10, 3)
+  unidadeMedida           String   @default("UNIDADE")
+  custoUnitarioAproximado Decimal? @db.Decimal(10, 2)
+  estoqueMinimo           Decimal? @db.Decimal(10, 3)
+  observacoes             String?
+  criadoEm                DateTime @default(now())
+  atualizadoEm            DateTime @updatedAt
+
+  negocio       Negocio                      @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  produto       Produto                      @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  movimentacoes MovimentacaoEstoqueInterno[]
+
+  @@unique([produtoId])
+  @@index([negocioId])
+}
+
+model MovimentacaoEstoqueInterno {
+  id                 String   @id @default(cuid())
+  negocioId          String
+  estoqueInternoId   String
+  produtoId          String
+  tipo               String
+  quantidade         Decimal  @db.Decimal(10, 3)
+  unidadeMedida      String
+  quantidadeAnterior Decimal  @db.Decimal(10, 3)
+  quantidadeNova     Decimal  @db.Decimal(10, 3)
+  motivo             String?
+  observacoes        String?
+  // Referência operacional da movimentação (ex.: OS e item) — usada como
+  // chave de idempotência contra baixa duplicada.
+  referenciaId       String?
+  referenciaTipo     String?
+  referenciaItemId   String?
+  registradoEm       DateTime @default(now())
+
+  estoqueInterno EstoqueInterno @relation(fields: [estoqueInternoId], references: [id], onDelete: Cascade)
+  negocio        Negocio        @relation(fields: [negocioId], references: [id], onDelete: Cascade)
+  produto        Produto        @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  @@index([estoqueInternoId])
+  @@index([negocioId])
+  @@index([produtoId])
+  @@index([referenciaTipo, referenciaId])
+  @@index([registradoEm])
 }
 
 // ============================================================================
@@ -796,11 +973,9 @@ enum TipoContato {
   OUTRO
 }
 
-enum TipoMovimentacaoEstoque {
-  ENTRADA
-  SAIDA
-  AJUSTE
-  RESERVA
+enum TipoParcela {
+  SINAL
+  PARCELA
 }
 
 enum TipoFormaPagamento {

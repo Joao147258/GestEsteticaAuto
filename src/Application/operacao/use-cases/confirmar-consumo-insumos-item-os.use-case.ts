@@ -66,7 +66,9 @@ export class ConfirmarConsumoInsumosItemOSUseCase {
       throw new NotFoundError("Ordem de serviço não encontrada.");
     }
 
-    const item = ordemServico.itens.find((atual) => atual.id === input.itemId);
+    const item = ordemServico.itens.find(
+      (atual) => atual.id === input.itemOrdemServicoId,
+    );
     if (!item) {
       throw new NotFoundError("Item da ordem de serviço não encontrado.");
     }
