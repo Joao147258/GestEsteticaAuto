@@ -14,6 +14,7 @@ import { EstoqueInternoModule } from './http/estoque-interno/estoque-interno.mod
 import { EstoqueVendaModule } from './http/estoque-venda/estoque-venda.module';
 import { IntegracoesModule } from './http/integracoes/integracoes.module';
 import { DashboardModule } from './http/dashboard/dashboard.module';
+import { HealthModule } from './http/health/health.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DashboardModule } from './http/dashboard/dashboard.module';
     EstoqueVendaModule,
     IntegracoesModule,
     DashboardModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
