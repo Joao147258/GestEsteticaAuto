@@ -1,6 +1,7 @@
 export * from "./CatalogoError";
 export * from "./CategoriaProdutoProps";
 export * from "./CategoriaServicoProps";
+export * from "./ConsumoInsumoServicoProps";
 export * from "./PacoteServicoProps";
 export * from "./ProdutoProps";
 export * from "./ServicoProps";
@@ -8,6 +9,8 @@ export * from "./TabelaPrecoProps";
 export * from "./catalogo_types";
 export * from "./categoria_produto";
 export * from "./categoria_servico";
+export * from "./consumo_insumo_servico";
+export * from "./conversao_unidade";
 export * from "./pacote_servico";
 export * from "./produto";
 export * from "./servico";

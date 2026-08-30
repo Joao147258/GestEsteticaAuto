@@ -91,7 +91,13 @@ export class EstoqueInterno {
   }
 
   // Saída para uso interno (consumo na operação, uso em um carro, etc.).
-  registrarSaidaInterna(quantidade: number, motivo?: string | null): void {
+  // Aceita referência opcional da operação que gerou a baixa (ex.: OS).
+  registrarSaidaInterna(
+    quantidade: number,
+    motivo?: string | null,
+    referenciaId?: string | null,
+    referenciaTipo?: string | null,
+  ): void {
     this.validarQuantidadePositiva(quantidade);
     this.validarSaldoParaBaixa(quantidade);
     const anterior = this.props.quantidadeAtual;
@@ -103,6 +109,8 @@ export class EstoqueInterno {
       quantidadeAnterior: anterior,
       quantidadeNova: nova,
       motivo,
+      referenciaId,
+      referenciaTipo,
     });
   }
 
@@ -164,6 +172,8 @@ export class EstoqueInterno {
     quantidadeNova: number;
     motivo?: string | null;
     observacoes?: string | null;
+    referenciaId?: string | null;
+    referenciaTipo?: string | null;
   }): void {
     const movimentacao = MovimentacaoEstoqueInterno.criar({
       id: randomUUID(),
@@ -177,6 +187,8 @@ export class EstoqueInterno {
       quantidadeNova: params.quantidadeNova,
       motivo: params.motivo?.trim() || null,
       observacoes: params.observacoes?.trim() || null,
+      referenciaId: params.referenciaId?.trim() || null,
+      referenciaTipo: params.referenciaTipo?.trim() || null,
       registradoEm: new Date(),
     });
     this.props.movimentacoes.push(movimentacao.toProps());

@@ -70,6 +70,14 @@ export class MovimentacaoEstoqueInterno {
     return this.props.observacoes;
   }
 
+  get referenciaId(): string | null | undefined {
+    return this.props.referenciaId;
+  }
+
+  get referenciaTipo(): string | null | undefined {
+    return this.props.referenciaTipo;
+  }
+
   get registradoEm(): Date {
     return this.props.registradoEm;
   }

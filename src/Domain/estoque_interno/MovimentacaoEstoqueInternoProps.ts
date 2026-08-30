@@ -15,5 +15,7 @@ export interface MovimentacaoEstoqueInternoProps {
   quantidadeNova: number; // saldo do estoque depois da movimentação (>= 0)
   motivo?: string | null;
   observacoes?: string | null;
+  referenciaId?: string | null; // ex: id da ordem de serviço que consumiu o insumo
+  referenciaTipo?: string | null; // ex: "ORDEM_SERVICO"
   registradoEm: Date;
 }
