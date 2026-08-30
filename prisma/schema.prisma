@@ -399,6 +399,7 @@ model Orcamento {
   negocioId           String
   clienteId           String
   veiculoId           String?
+  origem              String    @default("PAINEL")
   numero              String?
   politicaComercialId String?
   condicaoComercialId String?
@@ -535,6 +536,7 @@ model OrdemServico {
   iniciadaEm        DateTime?
   pausadaEm         DateTime?
   finalizadaEm      DateTime?
+  entregueEm        DateTime?
   canceladaEm       DateTime?
   previsaoInicio    DateTime?
   previsaoConclusao DateTime?

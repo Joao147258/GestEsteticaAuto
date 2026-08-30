@@ -59,10 +59,12 @@ export class CriarOrcamentoUseCase {
 
     // 3. Cria a entidade via factory do domínio — nasce como RASCUNHO, sem
     //    itens e com valores zerados (o total só existe depois dos itens).
+    //    A origem (PAINEL por padrão, SITE no futuro) é definida pelo domínio.
     const orcamento = Orcamento.criar({
       negocioId: input.negocioId,
       clienteId: input.clienteId,
       veiculoId: input.veiculoId,
+      origem: input.origem,
       observacoes: input.observacoes ?? null,
       validoAte: input.validadeEm ?? null,
     });

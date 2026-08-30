@@ -20,6 +20,7 @@ describe("PrismaOrdemServicoMapper", () => {
     iniciadaEm: new Date("2026-01-01T11:00:00Z"),
     pausadaEm: null,
     finalizadaEm: null,
+    entregueEm: null,
     canceladaEm: null,
     previsaoInicio: new Date("2026-01-01T10:00:00Z"),
     previsaoConclusao: new Date("2026-01-01T14:00:00Z"),
@@ -79,6 +80,18 @@ describe("PrismaOrdemServicoMapper", () => {
 
       expect(os.status).toBe("ABERTA");
     });
+
+    it("reconstrói status ENTREGUE e entregueEm", () => {
+      const os = PrismaOrdemServicoMapper.toDomain({
+        ...rawBase,
+        status: "ENTREGUE",
+        entregueEm: new Date("2026-01-02T09:00:00Z"),
+        itens: [],
+      } as any);
+
+      expect(os.status).toBe("ENTREGUE");
+      expect(os.entregueEm?.toISOString()).toBe("2026-01-02T09:00:00.000Z");
+    });
   });
 
   describe("toPrisma", () => {
@@ -105,6 +118,7 @@ describe("PrismaOrdemServicoMapper", () => {
         iniciadaEm: new Date("2026-01-01T11:00:00Z"),
         pausadaEm: null,
         finalizadaEm: null,
+        entregueEm: null,
         canceladaEm: null,
         previsaoInicio: new Date("2026-01-01T10:00:00Z"),
         previsaoConclusao: new Date("2026-01-01T14:00:00Z"),

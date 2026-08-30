@@ -9,6 +9,7 @@ export * from "./comercial_types";
 export * from "./condicao_comercial";
 export * from "./item_orcamento";
 export * from "./orcamento";
+export * from "./origem_orcamento_types";
 export * from "./politica_comercial";
 export * from "./status_aceite_orcamento_types";
 export * from "./status_orcamento_types";

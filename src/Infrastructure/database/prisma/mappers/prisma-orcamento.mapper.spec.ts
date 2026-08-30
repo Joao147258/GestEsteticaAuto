@@ -10,6 +10,7 @@ describe("PrismaOrcamentoMapper", () => {
     negocioId: "neg-1",
     clienteId: "cli-1",
     veiculoId: "vei-1",
+    origem: "PAINEL",
     numero: "0001",
     politicaComercialId: "pol-1",
     condicaoComercialId: "cond-1",
@@ -54,6 +55,7 @@ describe("PrismaOrcamentoMapper", () => {
       expect(orcamento.id).toBe("orc-1");
       expect(orcamento.politicaComercialId).toBe("pol-1");
       expect(orcamento.condicaoComercialId).toBe("cond-1");
+      expect(orcamento.origem).toBe("PAINEL");
       expect(orcamento.subtotal).toBe(250);
       expect(orcamento.valorDesconto).toBe(25);
       expect(orcamento.valorTotal).toBe(225);
@@ -62,6 +64,24 @@ describe("PrismaOrcamentoMapper", () => {
       expect(orcamento.itens).toHaveLength(1);
       expect(orcamento.itens[0].tipo).toBe("SERVICO");
       expect(orcamento.itens[0].referenciaId).toBe("serv-1");
+    });
+
+    it("reconstrói origem SITE e trata origem desconhecida como PAINEL", () => {
+      const orcamentoSite = PrismaOrcamentoMapper.toDomain({
+        ...rawBase,
+        origem: "SITE",
+        itens: [],
+        aceites: [],
+      } as any);
+      expect(orcamentoSite.origem).toBe("SITE");
+
+      const orcamentoDesconhecido = PrismaOrcamentoMapper.toDomain({
+        ...rawBase,
+        origem: "DESCONHECIDO",
+        itens: [],
+        aceites: [],
+      } as any);
+      expect(orcamentoDesconhecido.origem).toBe("PAINEL");
     });
 
     it("usa o aceite mais recente (maior criadoEm) na relação 1-N", () => {
@@ -128,6 +148,7 @@ describe("PrismaOrcamentoMapper", () => {
         negocioId: "neg-1",
         clienteId: "cli-1",
         veiculoId: "vei-1",
+        origem: "PAINEL",
         politicaComercialId: "pol-1",
         condicaoComercialId: "cond-1",
         status: "EM_ABERTO",

@@ -56,6 +56,30 @@ describe("Orcamento", () => {
     });
   });
 
+  describe("origem", () => {
+    it("nasce com origem PAINEL quando não informada (padrão do painel)", () => {
+      const orcamento = criarOrcamento();
+
+      expect(orcamento.origem).toBe("PAINEL");
+    });
+
+    it("aceita origem SITE na criação (canal futuro do site)", () => {
+      const orcamento = criarOrcamento({ origem: "SITE" });
+
+      expect(orcamento.origem).toBe("SITE");
+    });
+
+    it("rejeita origem desconhecida", () => {
+      expect(() =>
+        Orcamento.criar({
+          negocioId: "neg-1",
+          clienteId: "cli-1",
+          origem: "OUTRO" as never,
+        }),
+      ).toThrow(ComercialError);
+    });
+  });
+
   describe("itens e cálculo", () => {
     it("adicionarItem recalcula subtotal e total", () => {
       const orcamento = criarOrcamento();

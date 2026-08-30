@@ -2,16 +2,15 @@
 // repositórios em memória (sem banco, sem Prisma, sem HTTP/Controller).
 //
 // Simula o fluxo principal da V1 (painel administrativo):
-//   cliente → veículo → serviço → orçamento (itens) → abrir → aprovar →
-//   converter em OS → iniciar → concluir.
+//   cliente → veículo → serviço → orçamento (origem PAINEL, itens) → abrir →
+//   aprovar → converter em OS → iniciar → concluir → entregar.
 //
 // Mapeamento de nomes (o projeto usa nomes próprios, equivalentes aos nomes
 // de referência A_FAZER/EM_PRODUCAO/FINALIZADO/ENTREGUE):
 //   A_FAZER      → ABERTA       (status inicial da OS)
 //   EM_PRODUCAO  → EM_EXECUCAO  (OrdemServico.iniciar())
 //   FINALIZADO   → CONCLUIDA    (OrdemServico.concluir())
-//   ENTREGUE     → não existe no domínio atual — pendência de decisão (ver
-//                  docs/domain/fluxo-orcamento-os.md)
+//   ENTREGUE     → ENTREGUE     (OrdemServico.entregar())
 //
 // Observação: transição de item da OS (iniciarItem/concluirItem) ainda não tem
 // use case próprio na Application — o teste executa direto no domínio e
@@ -37,9 +36,13 @@ import { AprovarOrcamentoUseCase } from "../comercial/usecases/AprovarOrcamentoU
 import { CriarOrcamentoUseCase } from "../comercial/usecases/CriarOrcamentoUseCase";
 import { OrcamentoNaoAprovadoError } from "../operacao/errors/OrcamentoNaoAprovadoError";
 import { OrdensServicoRepository } from "../operacao/repositories/ordens-servico.repository";
+import { AtualizarOrdemServicoUseCase } from "../operacao/use-cases/atualizar-ordem-servico.use-case";
+import { CancelarOrdemServicoUseCase } from "../operacao/use-cases/cancelar-ordem-servico.use-case";
 import { ConcluirOrdemServicoUseCase } from "../operacao/use-cases/concluir-ordem-servico.use-case";
+import { EntregarOrdemServicoUseCase } from "../operacao/use-cases/entregar-ordem-servico.use-case";
 import { GerarOrdemServicoUseCase } from "../operacao/use-cases/gerar-ordem-servico.use-case";
 import { IniciarOrdemServicoUseCase } from "../operacao/use-cases/iniciar-ordem-servico.use-case";
+import { PausarOrdemServicoUseCase } from "../operacao/use-cases/pausar-ordem-servico.use-case";
 import { VeiculosRepository } from "../veiculos/repositories/veiculos.repository";
 import { CriarVeiculoUseCase } from "../veiculos/use-cases/criar-veiculo.use-case";
 
@@ -202,6 +205,7 @@ class OrcamentosEmMemoria implements OrcamentosRepository {
     negocioId: string;
     clienteId?: string;
     veiculoId?: string;
+    origem?: Orcamento["origem"];
     status?: Orcamento["status"];
     dataInicio?: Date;
     dataFim?: Date;
@@ -285,12 +289,12 @@ describe("Fluxo completo orçamento → OS (Application em memória)", () => {
     ordensRepo = new OrdensServicoEmMemoria();
   });
 
-  async function montarCenario() {
+  async function montarCenario(rotulo = "") {
     const cliente = await new CriarClienteUseCase(clientesRepo).execute({
       negocioId: NEGOCIO,
       nome: "João Silva",
       tipo: "PESSOA_FISICA",
-      documento: "123.456.789-00",
+      documento: `123.456.789-00${rotulo}`,
     });
 
     const veiculo = await new CriarVeiculoUseCase(
@@ -301,19 +305,74 @@ describe("Fluxo completo orçamento → OS (Application em memória)", () => {
       clienteId: cliente.id,
       marca: "Honda",
       modelo: "Civic",
-      placa: "HND-2020",
+      placa: `HND-2020${rotulo}`,
     });
 
     const servico = await new CriarServicoUseCase(servicosRepo).execute({
       negocioId: NEGOCIO,
-      nome: "Lavagem detalhada",
+      nome: `Lavagem detalhada${rotulo}`,
       precoBase: 120,
     });
 
     return { cliente, veiculo, servico };
   }
 
-  it("percorre o fluxo principal: cliente → veículo → serviço → orçamento → aprovar → OS → concluir", async () => {
+  // Cria um orçamento ACEITO e converte em OS (status ABERTA) — ponto de
+  // partida dos testes de transição da OS.
+  async function montarOsAberta(rotulo = "") {
+    const { cliente, veiculo, servico } = await montarCenario(rotulo);
+
+    const criado = await new CriarOrcamentoUseCase(
+      orcamentosRepo,
+      clientesRepo,
+      servicosRepo,
+    ).executar({
+      negocioId: NEGOCIO,
+      clienteId: cliente.id,
+      veiculoId: veiculo.id,
+      itens: [{ servicoId: servico.id, quantidade: 1, valorUnitario: 120 }],
+    });
+    await new AbrirOrcamentoUseCase(orcamentosRepo).executar({
+      negocioId: NEGOCIO,
+      orcamentoId: criado.id,
+    });
+    await new AprovarOrcamentoUseCase(orcamentosRepo).executar({
+      negocioId: NEGOCIO,
+      orcamentoId: criado.id,
+    });
+
+    const gerarOs = new GerarOrdemServicoUseCase(ordensRepo, orcamentosRepo);
+    const os = await gerarOs.execute({
+      negocioId: NEGOCIO,
+      orcamentoId: criado.id,
+    });
+    return { criado, os, gerarOs };
+  }
+
+  // Leva uma OS até ENTREGUE (ABERTA → EM_EXECUCAO → CONCLUIDA → ENTREGUE).
+  async function montarOsEntregue() {
+    const { os } = await montarOsAberta();
+    await new IniciarOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: os.id,
+    });
+    for (const item of os.itens) {
+      os.iniciarItem(item.id);
+      os.concluirItem(item.id);
+    }
+    await ordensRepo.salvar(os);
+    await new ConcluirOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: os.id,
+    });
+    await new EntregarOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: os.id,
+    });
+    return os;
+  }
+
+  it("percorre o fluxo principal: cliente → veículo → serviço → orçamento → aprovar → OS → concluir → entregar", async () => {
     const { cliente, veiculo, servico } = await montarCenario();
 
     // 1. Criar orçamento manual pelo painel, com um item na criação.
@@ -329,6 +388,8 @@ describe("Fluxo completo orçamento → OS (Application em memória)", () => {
     });
     expect(criado.status).toBe("RASCUNHO");
     expect(criado.itens).toHaveLength(1);
+    // 1b. Orçamento criado pelo painel nasce com origem PAINEL (padrão).
+    expect(criado.origem).toBe("PAINEL");
 
     // 2. Adicionar item/serviço ao orçamento (mesmo serviço, valor negociado).
     const comItemExtra = await new AdicionarItemOrcamentoUseCase(
@@ -400,19 +461,29 @@ describe("Fluxo completo orçamento → OS (Application em memória)", () => {
     expect(concluida.status).toBe("CONCLUIDA");
     expect(concluida.finalizadaEm).toBeInstanceOf(Date);
 
-    // 11. Vínculo orçamento → OS preservado e rastreabilidade comercial.
-    expect(concluida.orcamentoId).toBe(criado.id);
+    // 11. Entregar a OS ao cliente (CONCLUIDA → ENTREGUE).
+    const entregue = await new EntregarOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: os.id,
+    });
+    expect(entregue.status).toBe("ENTREGUE");
+    expect(entregue.entregueEm).toBeInstanceOf(Date);
+
+    // 12. Vínculo orçamento → OS preservado e rastreabilidade comercial.
+    expect(entregue.orcamentoId).toBe(criado.id);
     const orcamentoPersistido = await orcamentosRepo.buscarPorId(
       NEGOCIO,
       criado.id,
     );
     expect(orcamentoPersistido?.status).toBe("ACEITO");
+    // 13. A origem do orçamento permanece PAINEL (canal do painel).
+    expect(orcamentoPersistido?.origem).toBe("PAINEL");
     const statuses = orcamentoPersistido?.alteracoes
       .filter((a) => a.campo === "status")
       .map((a) => a.valorNovo);
     expect(statuses).toEqual(["EM_ABERTO", "ACEITO"]);
 
-    // 12. Não converte o mesmo orçamento duas vezes (idempotente: retorna a
+    // 14. Não converte o mesmo orçamento duas vezes (idempotente: retorna a
     //     mesma OS e não cria outra).
     const osDeNovo = await gerarOs.execute({
       negocioId: NEGOCIO,
@@ -511,5 +582,97 @@ describe("Fluxo completo orçamento → OS (Application em memória)", () => {
         orcamentoId: criado.id,
       }),
     ).rejects.toThrow(ComercialError);
+  });
+
+  it("não entrega OS fora de CONCLUIDA (ABERTA, EM_EXECUCAO, PAUSADA, CANCELADA)", async () => {
+    // ABERTA — nunca entrou em produção.
+    const { os: aberta } = await montarOsAberta("1");
+    await expect(
+      new EntregarOrdemServicoUseCase(ordensRepo).execute({
+        negocioId: NEGOCIO,
+        ordemServicoId: aberta.id,
+      }),
+    ).rejects.toThrow(OperacaoError);
+
+    // EM_EXECUCAO — ainda em produção.
+    const { os: emExecucao } = await montarOsAberta("2");
+    await new IniciarOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: emExecucao.id,
+    });
+    await expect(
+      new EntregarOrdemServicoUseCase(ordensRepo).execute({
+        negocioId: NEGOCIO,
+        ordemServicoId: emExecucao.id,
+      }),
+    ).rejects.toThrow(OperacaoError);
+
+    // PAUSADA — produção pausada.
+    const { os: pausada } = await montarOsAberta("3");
+    await new IniciarOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: pausada.id,
+    });
+    await new PausarOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: pausada.id,
+    });
+    await expect(
+      new EntregarOrdemServicoUseCase(ordensRepo).execute({
+        negocioId: NEGOCIO,
+        ordemServicoId: pausada.id,
+      }),
+    ).rejects.toThrow(OperacaoError);
+
+    // CANCELADA — encerrada.
+    const { os: cancelada } = await montarOsAberta("4");
+    await new CancelarOrdemServicoUseCase(ordensRepo).execute({
+      negocioId: NEGOCIO,
+      ordemServicoId: cancelada.id,
+      motivo: "cliente desistiu",
+    });
+    await expect(
+      new EntregarOrdemServicoUseCase(ordensRepo).execute({
+        negocioId: NEGOCIO,
+        ordemServicoId: cancelada.id,
+      }),
+    ).rejects.toThrow(OperacaoError);
+  });
+
+  it("não altera OS ENTREGUE", async () => {
+    const os = await montarOsEntregue();
+    expect(os.status).toBe("ENTREGUE");
+
+    await expect(
+      new AtualizarOrdemServicoUseCase(ordensRepo).execute({
+        negocioId: NEGOCIO,
+        ordemServicoId: os.id,
+        observacoes: "alteração após entrega",
+      }),
+    ).rejects.toThrow(OperacaoError);
+    expect((await ordensRepo.buscarPorId(NEGOCIO, os.id))?.status).toBe("ENTREGUE");
+  });
+
+  it("não cancela OS ENTREGUE", async () => {
+    const os = await montarOsEntregue();
+
+    await expect(
+      new CancelarOrdemServicoUseCase(ordensRepo).execute({
+        negocioId: NEGOCIO,
+        ordemServicoId: os.id,
+        motivo: "teste",
+      }),
+    ).rejects.toThrow(OperacaoError);
+  });
+
+  it("não inicia OS ENTREGUE", async () => {
+    const os = await montarOsEntregue();
+
+    await expect(
+      new IniciarOrdemServicoUseCase(ordensRepo).execute({
+        negocioId: NEGOCIO,
+        ordemServicoId: os.id,
+      }),
+    ).rejects.toThrow(OperacaoError);
   });
 });

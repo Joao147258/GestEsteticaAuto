@@ -28,6 +28,7 @@ export interface OrdemServicoProps {
   iniciadaEm?: Date | null;
   pausadaEm?: Date | null;
   finalizadaEm?: Date | null;
+  entregueEm?: Date | null;
   canceladaEm?: Date | null;
   previsaoInicio?: Date | null;
   previsaoConclusao?: Date | null;

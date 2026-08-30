@@ -52,6 +52,7 @@ export class OrdemServico {
       iniciadaEm: null,
       pausadaEm: null,
       finalizadaEm: null,
+      entregueEm: null,
       canceladaEm: null,
       previsaoInicio: props.previsaoInicio ?? null,
       previsaoConclusao: props.previsaoConclusao ?? null,
@@ -192,8 +193,25 @@ export class OrdemServico {
     this.props.atualizadoEm = new Date();
   }
 
+  // Entrega ao cliente: só uma ordem CONCLUIDA pode ser entregue (o serviço
+  // executado é que vira entrega). Segue o padrão das demais transições:
+  // valida o status de origem, registra no histórico, troca o status e marca
+  // o timestamp específico (entregueEm).
+  entregar(): void {
+    if (this.props.status !== "CONCLUIDA") {
+      throw new OperacaoError("Apenas ordem CONCLUIDA pode ser entregue");
+    }
+    this.transicionar("ENTREGUE", { descricao: "ordem entregue ao cliente" });
+    this.props.entregueEm = new Date();
+    this.props.atualizadoEm = new Date();
+  }
+
   cancelar(dados?: DadosAlteracaoOperacao): void {
-    if (this.props.status === "CONCLUIDA" || this.props.status === "CANCELADA") {
+    if (
+      this.props.status === "CONCLUIDA" ||
+      this.props.status === "ENTREGUE" ||
+      this.props.status === "CANCELADA"
+    ) {
       throw new OperacaoError("Ordem já finalizada não pode ser cancelada");
     }
     this.transicionar("CANCELADA", dados ?? { descricao: "ordem cancelada" });
@@ -320,7 +338,11 @@ export class OrdemServico {
   }
 
   private validarNaoEncerrada(): void {
-    if (this.props.status === "CONCLUIDA" || this.props.status === "CANCELADA") {
+    if (
+      this.props.status === "CONCLUIDA" ||
+      this.props.status === "ENTREGUE" ||
+      this.props.status === "CANCELADA"
+    ) {
       throw new OperacaoError("Ordem encerrada não aceita novos registros");
     }
   }
@@ -422,6 +444,10 @@ export class OrdemServico {
 
   get finalizadaEm(): Date | null | undefined {
     return this.props.finalizadaEm;
+  }
+
+  get entregueEm(): Date | null | undefined {
+    return this.props.entregueEm;
   }
 
   get canceladaEm(): Date | null | undefined {

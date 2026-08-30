@@ -1,4 +1,4 @@
-import { StatusOrcamento } from "../../../Domain";
+import { StatusOrcamento, OrigemOrcamento } from "../../../Domain";
 
 // Resposta padrão dos use cases comerciais (busca, listagem, criação).
 // O use case monta este formato a partir da entidade Orcamento do domínio.
@@ -24,6 +24,7 @@ export type OrcamentoOutputDTO = {
   negocioId: string;
   clienteId: string;
   veiculoId: string | null;
+  origem: OrigemOrcamento;
   status: StatusOrcamento;
   itens: OrcamentoItemOutputDTO[];
   valorTotal: number;

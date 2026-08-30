@@ -7,6 +7,7 @@ import { AceiteOrcamento } from "./aceite_orcamento";
 import { AceiteOrcamentoProps } from "./AceiteOrcamentoProps";
 import { CanalAceiteOrcamento } from "./status_aceite_orcamento_types";
 import { StatusOrcamento } from "./status_orcamento_types";
+import { OrigemOrcamento } from "./origem_orcamento_types";
 import { DadosAlteracaoComercial } from "./comercial_types";
 
 // Orcamento — agregado principal do comercial.
@@ -29,12 +30,19 @@ export class Orcamento {
     if (!clienteId) {
       throw new ComercialError("Cliente é obrigatório");
     }
+    // Origem do canal de entrada. Padrão PAINEL (fluxo administrativo da V1);
+    // SITE é aceito para preparar a futura entrada do site no mesmo fluxo.
+    const origem = props.origem ?? "PAINEL";
+    if (origem !== "PAINEL" && origem !== "SITE") {
+      throw new ComercialError("Origem do orçamento inválida");
+    }
 
     return new Orcamento({
       id: randomUUID(),
       negocioId,
       clienteId,
       veiculoId: props.veiculoId?.trim() || null,
+      origem,
       itens: [],
       politicaComercialId: props.politicaComercialId?.trim() || null,
       condicaoComercialId: props.condicaoComercialId?.trim() || null,
@@ -332,6 +340,10 @@ export class Orcamento {
 
   get veiculoId(): string | null | undefined {
     return this.props.veiculoId;
+  }
+
+  get origem(): OrigemOrcamento {
+    return this.props.origem;
   }
 
   get itens(): ItemOrcamentoProps[] {

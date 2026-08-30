@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Orcamento, StatusOrcamento } from "../../../../Domain/comercial";
+import { Orcamento, StatusOrcamento, OrigemOrcamento } from "../../../../Domain/comercial";
 import { OrcamentosRepository } from "../../../../Application/comercial/repositories/OrcamentosRepository";
 import { PrismaService } from "../prisma.service";
 import { PrismaOrcamentoMapper } from "../mappers/prisma-orcamento.mapper";
@@ -64,6 +64,7 @@ export class PrismaOrcamentosRepository implements OrcamentosRepository {
     negocioId: string;
     clienteId?: string;
     veiculoId?: string;
+    origem?: OrigemOrcamento;
     status?: StatusOrcamento;
     dataInicio?: Date;
     dataFim?: Date;
@@ -75,6 +76,7 @@ export class PrismaOrcamentosRepository implements OrcamentosRepository {
       negocioId,
       clienteId,
       veiculoId,
+      origem,
       status,
       dataInicio,
       dataFim,
@@ -88,6 +90,7 @@ export class PrismaOrcamentosRepository implements OrcamentosRepository {
         negocioId,
         ...(clienteId ? { clienteId } : {}),
         ...(veiculoId ? { veiculoId } : {}),
+        ...(origem ? { origem } : {}),
         ...(status ? { status } : {}),
         ...(dataInicio || dataFim
           ? {

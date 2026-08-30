@@ -19,6 +19,7 @@ export class OrcamentoMapper {
       negocioId: orcamento.negocioId,
       clienteId: orcamento.clienteId,
       veiculoId: orcamento.veiculoId ?? null,
+      origem: orcamento.origem,
       status: orcamento.status,
       itens: orcamento.itens.map((item) => this.itemParaOutput(item)),
       valorTotal: orcamento.valorTotal,

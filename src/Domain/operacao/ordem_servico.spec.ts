@@ -161,6 +161,73 @@ describe("OrdemServico", () => {
     });
   });
 
+  describe("entrega", () => {
+    function criarOrdemConcluida(): OrdemServico {
+      const ordem = criarOrdem();
+      const [id1, id2] = adicionarItens(ordem);
+      ordem.iniciar();
+      ordem.concluirItem(id1);
+      ordem.concluirItem(id2);
+      ordem.concluir();
+      return ordem;
+    }
+
+    it("entrega apenas ordem CONCLUIDA e registra entregueEm", () => {
+      const ordem = criarOrdemConcluida();
+      expect(ordem.status).toBe("CONCLUIDA");
+
+      ordem.entregar();
+
+      expect(ordem.status).toBe("ENTREGUE");
+      expect(ordem.entregueEm).toBeInstanceOf(Date);
+      const statusAlteracao = ordem.alteracoes
+        .filter((a) => a.campo === "status")
+        .at(-1);
+      expect(statusAlteracao?.valorAnterior).toBe("CONCLUIDA");
+      expect(statusAlteracao?.valorNovo).toBe("ENTREGUE");
+    });
+
+    it("não entrega ordem ABERTA, EM_EXECUCAO, PAUSADA nem CANCELADA", () => {
+      const aberta = criarOrdem();
+      expect(() => aberta.entregar()).toThrow(OperacaoError);
+
+      const emExecucao = criarOrdem();
+      emExecucao.iniciar();
+      expect(() => emExecucao.entregar()).toThrow(OperacaoError);
+
+      const pausada = criarOrdem();
+      pausada.iniciar();
+      pausada.pausar();
+      expect(() => pausada.entregar()).toThrow(OperacaoError);
+
+      const cancelada = criarOrdem();
+      cancelada.cancelar();
+      expect(() => cancelada.entregar()).toThrow(OperacaoError);
+    });
+
+    it("não permite cancelar, iniciar ou concluir ordem ENTREGUE", () => {
+      const ordem = criarOrdemConcluida();
+      ordem.entregar();
+      expect(ordem.status).toBe("ENTREGUE");
+
+      expect(() => ordem.cancelar()).toThrow(OperacaoError);
+      expect(() => ordem.iniciar()).toThrow(OperacaoError);
+      expect(() => ordem.concluir()).toThrow(OperacaoError);
+    });
+
+    it("não permite alterar ordem ENTREGUE", () => {
+      const ordem = criarOrdemConcluida();
+      ordem.entregar();
+
+      expect(() =>
+        ordem.atualizarDadosOperacionais({ observacoes: "tarde demais" }),
+      ).toThrow(OperacaoError);
+      expect(() =>
+        ordem.adicionarFoto({ tipo: "ENTREGA", url: "https://x" }),
+      ).toThrow(OperacaoError);
+    });
+  });
+
   describe("registros operacionais", () => {
     it("registrarInspecaoEntrada pertence à ordem", () => {
       const ordem = criarOrdem();

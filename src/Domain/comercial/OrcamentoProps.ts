@@ -1,6 +1,7 @@
 import { ItemOrcamentoProps } from "./ItemOrcamentoProps";
 import { AceiteOrcamentoProps } from "./AceiteOrcamentoProps";
 import { StatusOrcamento } from "./status_orcamento_types";
+import { OrigemOrcamento } from "./origem_orcamento_types";
 import { RegistroAlteracaoComercial } from "./comercial_types";
 
 // Propriedades da entidade Orcamento.
@@ -11,6 +12,9 @@ export interface OrcamentoProps {
   negocioId: string;
   clienteId: string;
   veiculoId?: string | null;
+  // Canal de entrada: PAINEL (padrão) ou SITE (futuro). O site usa o mesmo
+  // fluxo de orçamento — apenas informa a origem na criação.
+  origem: OrigemOrcamento;
   itens: ItemOrcamentoProps[];
   politicaComercialId?: string | null;
   condicaoComercialId?: string | null;
@@ -33,6 +37,8 @@ export interface CriarOrcamentoProps {
   negocioId: string;
   clienteId: string;
   veiculoId?: string | null;
+  // Opcional: quando ausente, o orçamento nasce com origem PAINEL.
+  origem?: OrigemOrcamento;
   observacoes?: string | null;
   validoAte?: Date | null;
   politicaComercialId?: string | null;

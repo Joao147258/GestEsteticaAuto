@@ -1,4 +1,4 @@
-import { Orcamento, StatusOrcamento } from "../../../Domain/comercial";
+import { Orcamento, StatusOrcamento, OrigemOrcamento } from "../../../Domain/comercial";
 
 export abstract class OrcamentosRepository {
     abstract salvar(orcamento: Orcamento): Promise<void>;
@@ -12,6 +12,7 @@ export abstract class OrcamentosRepository {
         negocioId: string;
         clienteId?: string;
         veiculoId?: string;
+        origem?: OrigemOrcamento;
         status?: StatusOrcamento;
         dataInicio?: Date;
         dataFim?: Date;

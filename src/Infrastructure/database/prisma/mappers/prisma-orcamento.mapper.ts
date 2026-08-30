@@ -1,4 +1,4 @@
-import { Orcamento, StatusOrcamento } from "../../../../Domain/comercial";
+import { Orcamento, StatusOrcamento, OrigemOrcamento } from "../../../../Domain/comercial";
 import { AceiteOrcamentoProps } from "../../../../Domain/comercial/AceiteOrcamentoProps";
 import type {
   Orcamento as PrismaOrcamento,
@@ -24,6 +24,7 @@ export class PrismaOrcamentoMapper {
       negocioId: raw.negocioId,
       clienteId: raw.clienteId,
       veiculoId: raw.veiculoId ?? null,
+      origem: PrismaOrcamentoMapper.toDomainOrigem(raw.origem),
       itens: (raw.itens ?? []).map(PrismaItemOrcamentoMapper.toDomain),
       politicaComercialId: raw.politicaComercialId ?? null,
       condicaoComercialId: raw.condicaoComercialId ?? null,
@@ -49,6 +50,7 @@ export class PrismaOrcamentoMapper {
       negocioId: orcamento.negocioId,
       clienteId: orcamento.clienteId,
       veiculoId: orcamento.veiculoId ?? null,
+      origem: orcamento.origem,
       politicaComercialId: orcamento.politicaComercialId ?? null,
       condicaoComercialId: orcamento.condicaoComercialId ?? null,
       status: orcamento.status,
@@ -89,5 +91,11 @@ export class PrismaOrcamentoMapper {
     return valores.includes(status as StatusOrcamento)
       ? (status as StatusOrcamento)
       : "RASCUNHO";
+  }
+
+  // Origem é String no banco e union no domínio. Valor desconhecido vira
+  // PAINEL (canal padrão da V1) — mesma estratégia do toDomainStatus.
+  private static toDomainOrigem(origem: string | null | undefined): OrigemOrcamento {
+    return origem === "SITE" || origem === "PAINEL" ? origem : "PAINEL";
   }
 }

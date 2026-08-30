@@ -33,6 +33,7 @@ export class PrismaOrdemServicoMapper {
       iniciadaEm: raw.iniciadaEm ?? null,
       pausadaEm: raw.pausadaEm ?? null,
       finalizadaEm: raw.finalizadaEm ?? null,
+      entregueEm: raw.entregueEm ?? null,
       canceladaEm: raw.canceladaEm ?? null,
       previsaoInicio: raw.previsaoInicio ?? null,
       previsaoConclusao: raw.previsaoConclusao ?? null,
@@ -59,6 +60,7 @@ export class PrismaOrdemServicoMapper {
       iniciadaEm: ordemServico.iniciadaEm ?? null,
       pausadaEm: ordemServico.pausadaEm ?? null,
       finalizadaEm: ordemServico.finalizadaEm ?? null,
+      entregueEm: ordemServico.entregueEm ?? null,
       canceladaEm: ordemServico.canceladaEm ?? null,
       previsaoInicio: ordemServico.previsaoInicio ?? null,
       previsaoConclusao: ordemServico.previsaoConclusao ?? null,
@@ -74,6 +76,7 @@ export class PrismaOrdemServicoMapper {
       "EM_EXECUCAO",
       "PAUSADA",
       "CONCLUIDA",
+      "ENTREGUE",
       "CANCELADA",
     ];
     return valores.includes(status as StatusOrdemServico)
