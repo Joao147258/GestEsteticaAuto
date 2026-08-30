@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Query,
-  UsePipes,
 } from '@nestjs/common';
 import {
   AbrirOrcamentoUseCase,
@@ -22,7 +21,6 @@ import {
   RecusarOrcamentoUseCase,
   RemoverItemOrcamentoUseCase,
 } from '../../../Application/comercial';
-import { validationPipeConfig } from '../pipes/validation-pipe.config';
 import { AbrirOrcamentoDto } from './dto/abrir-orcamento.dto';
 import { AdicionarItemOrcamentoDto } from './dto/adicionar-item-orcamento.dto';
 import { AprovarOrcamentoDto } from './dto/aprovar-orcamento.dto';
@@ -45,7 +43,6 @@ import { OrcamentoPresenter } from './presenters/orcamento.presenter';
 // negocioId passará a vir do usuário autenticado e estes campos serão
 // removidos do contrato HTTP.
 @Controller('admin/orcamentos')
-@UsePipes(validationPipeConfig)
 export class OrcamentosController {
   constructor(
     private readonly criarOrcamentoUseCase: CriarOrcamentoUseCase,
