@@ -17,5 +17,6 @@ export interface MovimentacaoEstoqueInternoProps {
   observacoes?: string | null;
   referenciaId?: string | null; // ex: id da ordem de serviço que consumiu o insumo
   referenciaTipo?: string | null; // ex: "ORDEM_SERVICO"
+  referenciaItemId?: string | null; // ex: id do item da OS (granularidade do item)
   registradoEm: Date;
 }

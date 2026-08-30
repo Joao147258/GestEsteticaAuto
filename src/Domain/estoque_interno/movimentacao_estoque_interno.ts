@@ -78,6 +78,10 @@ export class MovimentacaoEstoqueInterno {
     return this.props.referenciaTipo;
   }
 
+  get referenciaItemId(): string | null | undefined {
+    return this.props.referenciaItemId;
+  }
+
   get registradoEm(): Date {
     return this.props.registradoEm;
   }

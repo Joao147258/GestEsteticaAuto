@@ -91,13 +91,14 @@ describe("EstoqueInterno", () => {
 
     it("registra referência da operação quando informada", () => {
       const estoque = criarEstoque();
-      estoque.registrarSaidaInterna(3, "Consumo em OS", "os-1", "ORDEM_SERVICO");
+      estoque.registrarSaidaInterna(3, "Consumo em OS", "os-1", "ORDEM_SERVICO", "item-1");
 
       expect(estoque.quantidadeAtual).toBe(7);
       const ultima = estoque.movimentacoes.at(-1);
       expect(ultima?.tipo).toBe("SAIDA_INTERNA");
       expect(ultima?.referenciaId).toBe("os-1");
       expect(ultima?.referenciaTipo).toBe("ORDEM_SERVICO");
+      expect(ultima?.referenciaItemId).toBe("item-1");
     });
   });
 

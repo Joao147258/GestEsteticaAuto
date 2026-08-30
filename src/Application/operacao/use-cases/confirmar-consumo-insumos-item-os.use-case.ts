@@ -21,6 +21,10 @@ export type ItemConsumoInsuficiente = {
   motivo: string;
 };
 
+export type ItemConsumoJaRegistrado = {
+  produtoId: string;
+};
+
 export type AlertaEstoqueMinimo = {
   produtoId: string;
   quantidadeAtual: number;
@@ -28,11 +32,12 @@ export type AlertaEstoqueMinimo = {
 };
 
 // Resultado da confirmação da baixa: o que foi baixado, o que não pôde
-// (saldo insuficiente), alertas de estoque mínimo e o custo estimado
-// (estimativa gerencial, não custo contábil).
+// (saldo insuficiente), o que já estava registrado (baixa idempotente),
+// alertas de estoque mínimo e o custo estimado (estimativa gerencial).
 export type ResultadoConfirmacaoConsumoItemOS = {
   realizados: ItemConsumoRealizado[];
   insuficientes: ItemConsumoInsuficiente[];
+  jaRegistrados: ItemConsumoJaRegistrado[];
   alertasEstoqueMinimo: AlertaEstoqueMinimo[];
   custoEstimado: number;
   possuiCustosDesconhecidos: boolean;
@@ -69,6 +74,7 @@ export class ConfirmarConsumoInsumosItemOSUseCase {
     const resultado: ResultadoConfirmacaoConsumoItemOS = {
       realizados: [],
       insuficientes: [],
+      jaRegistrados: [],
       alertasEstoqueMinimo: [],
       custoEstimado: 0,
       possuiCustosDesconhecidos: false,
@@ -84,6 +90,24 @@ export class ConfirmarConsumoInsumosItemOSUseCase {
     );
 
     for (const consumo of consumos) {
+      // Proteção contra baixa duplicada: chave lógica é a origem operacional
+      // completa (negocioId + referenciaTipo + referenciaId + referenciaItemId
+      // + produtoId). Se já existe movimentação para esta origem, o insumo é
+      // reportado como jaRegistrados e não é baixado novamente.
+      const jaRegistrado = await this.estoquesRepository.existeMovimentacaoPorOrigem(
+        {
+          negocioId: input.negocioId,
+          referenciaTipo: "ORDEM_SERVICO",
+          referenciaId: ordemServico.id,
+          referenciaItemId: item.id,
+          produtoId: consumo.produtoId,
+        },
+      );
+      if (jaRegistrado) {
+        resultado.jaRegistrados.push({ produtoId: consumo.produtoId });
+        continue;
+      }
+
       const estoque = await this.estoquesRepository.buscarPorProduto(
         input.negocioId,
         consumo.produtoId,
@@ -143,8 +167,9 @@ export class ConfirmarConsumoInsumosItemOSUseCase {
         estoque.registrarSaidaInterna(
           quantidadeEmUnidadeDeReferencia,
           "Consumo em ordem de serviço",
-          input.ordemServicoId,
+          ordemServico.id,
           "ORDEM_SERVICO",
+          item.id,
         );
       } catch (erro) {
         if (erro instanceof EstoqueInternoError) {

@@ -51,6 +51,28 @@ describe("MovimentacaoEstoqueInterno", () => {
     expect(() => criarMovimentacao({ quantidadeNova: -1 })).toThrow(EstoqueInternoError);
   });
 
+  it("mantém referência operacional completa quando informada", () => {
+    const mov = criarMovimentacao({
+      tipo: "SAIDA_INTERNA",
+      referenciaId: "os-1",
+      referenciaTipo: "ORDEM_SERVICO",
+      referenciaItemId: "item-1",
+    });
+
+    expect(mov.referenciaId).toBe("os-1");
+    expect(mov.referenciaTipo).toBe("ORDEM_SERVICO");
+    expect(mov.referenciaItemId).toBe("item-1");
+  });
+
+  it("movimentação manual pode não ter referência de item", () => {
+    const mov = criarMovimentacao({ tipo: "SAIDA_INTERNA" });
+
+    // Campos de referência ausentes (null/undefined) são válidos em movimentação manual.
+    expect(mov.referenciaId).toBeFalsy();
+    expect(mov.referenciaTipo).toBeFalsy();
+    expect(mov.referenciaItemId).toBeFalsy();
+  });
+
   it("toProps devolve uma cópia dos dados", () => {
     const mov = criarMovimentacao();
     const props = mov.toProps();
