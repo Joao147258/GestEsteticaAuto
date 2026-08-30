@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { InfrastructureModule } from '../Infrastructure/infrastructure.module';
+import { AppController } from './app.controller';
 import { AuthModule } from './http/auth/auth.module';
 import { NegociosModule } from './http/negocio/negocios.module';
 import { UsuariosModule } from './http/usuarios/usuarios.module';
@@ -17,6 +18,7 @@ import { DashboardModule } from './http/dashboard/dashboard.module';
 import { HealthModule } from './http/health/health.module';
 
 @Module({
+  controllers: [AppController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     InfrastructureModule,
