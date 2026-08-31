@@ -73,6 +73,16 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 src/Domain/comercial/md/
 src/IntegraçãoWPP/fluxos/
 
+# Tratativas internas de erro — material privado de aprendizado/operação.
+# Ficam apenas no ambiente privado de skills, NUNCA no repositório público.
+# (inclui variações de nome para evitar vazamento acidental)
+ErrosTratativas/
+erros-tratativas/
+errosTratativas/
+erros_tratativas/
+tratativas-erros/
+error-treatments/
+
 # Guias internos e scripts de debug — não versionar
 **/[gG]uia*.md
 src/Application/comercial/integracao-venda-produtos.md
