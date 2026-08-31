@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { AprovarOrcamentoDTO } from "../dtos/AprovarOrcamentoDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -8,6 +9,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // AprovarOrcamentoUseCase — registra que o cliente aceitou o orçamento.
 // A regra de "pode aprovar" (status EM_ABERTO, itens presentes) é do domínio,
 // via Orcamento.aceitar() — a use case não muda status diretamente.
+@Injectable()
 export class AprovarOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

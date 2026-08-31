@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { AbrirOrcamentoDTO } from "../dtos/AbrirOrcamentoDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -11,6 +12,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // Sem este elo de aplicação, o orçamento criado pelo painel nunca chega a
 // EM_ABERTO e o AprovarOrcamentoUseCase (Orcamento.aceitar()) rejeitaria a
 // aprovação com status RASCUNHO.
+@Injectable()
 export class AbrirOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

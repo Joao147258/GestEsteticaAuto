@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { AtualizarObservacoesOrcamentoDTO } from "../dtos/AtualizarObservacoesOrcamentoDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -8,6 +9,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // AtualizarObservacoesOrcamentoUseCase — altera apenas as observações
 // comerciais do orçamento (ex.: "cliente pediu desconto"). Não mexe em itens,
 // status ou valores. A regra de editabilidade é do domínio.
+@Injectable()
 export class AtualizarObservacoesOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

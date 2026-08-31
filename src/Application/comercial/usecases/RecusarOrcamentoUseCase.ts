@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { RecusarOrcamentoDTO } from "../dtos/RecusarOrcamentoDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -9,6 +10,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // A regra de "pode recusar" (ex.: aprovado/cancelado não podem ser recusados)
 // é do domínio, via Orcamento.recusar(). O motivo da recusa vai para as
 // observações do aceite, preservando histórico comercial.
+@Injectable()
 export class RecusarOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

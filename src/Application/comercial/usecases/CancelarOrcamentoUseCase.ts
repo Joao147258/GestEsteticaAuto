@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { CancelarOrcamentoDTO } from "../dtos/CancelarOrcamentoDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -9,6 +10,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // empresa (não é recusa do cliente). A regra de "pode cancelar" (ex.: já
 // finalizado não pode) é do domínio, via Orcamento.cancelar(). O motivo vai
 // para a descrição do registro de alteração.
+@Injectable()
 export class CancelarOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

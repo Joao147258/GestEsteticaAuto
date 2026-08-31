@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { AdicionarItemOrcamentoDTO } from "../dtos/AdicionarItemOrcamentoDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -10,6 +11,7 @@ import { ServicosRepository } from "../../catalogo/repositories/servicos.reposit
 // AdicionarItemOrcamentoUseCase — inclui um serviço do catálogo num orçamento
 // existente. Valida orçamento e serviço no escopo do negócio, delega a
 // montagem do item ao domínio (que recalcula os totais) e salva.
+@Injectable()
 export class AdicionarItemOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

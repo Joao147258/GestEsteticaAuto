@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { ListarOrcamentosDTO } from "../dtos/ListarOrcamentosDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
 import { OrcamentoMapper } from "../mappers/OrcamentoMapper";
@@ -6,6 +7,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // ListarOrcamentosUseCase — consulta orçamentos de um negócio com filtros.
 // Use case somente leitura: não altera nem salva nada. Se não houver
 // resultados, retorna lista vazia (sem lançar erro).
+@Injectable()
 export class ListarOrcamentosUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { RemoverItemOrcamentoDTO } from "../dtos/RemoverItemOrcamentoDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -9,6 +10,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // Remove pelo itemId (não por servicoId): o mesmo serviço pode aparecer mais
 // de uma vez com condições diferentes. A regra de poder remover (status
 // editável, item existente) é do domínio e propaga para cá.
+@Injectable()
 export class RemoverItemOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

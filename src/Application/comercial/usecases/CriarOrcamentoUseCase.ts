@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { Servico } from "../../../Domain";
 import { Orcamento } from "../../../Domain/comercial";
 import type { CriarOrcamentoDTO } from "../dtos/CriarOrcamentoDTO";
@@ -16,6 +17,7 @@ import { ServicosRepository } from "../../catalogo/repositories/servicos.reposit
 //
 // Pendência: a validação de existência do veículo fica de fora até o
 // VeiculosRepository expor um método de busca (hoje o contrato está vazio).
+@Injectable()
 export class CriarOrcamentoUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,

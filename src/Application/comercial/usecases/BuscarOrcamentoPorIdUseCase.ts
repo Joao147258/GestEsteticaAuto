@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Orcamento } from "../../../Domain/comercial";
 import type { BuscarOrcamentoPorIdDTO } from "../dtos/BuscarOrcamentoPorIdDTO";
 import type { OrcamentoOutputDTO } from "../dtos/OrcamentoOutputDTO";
@@ -8,6 +9,7 @@ import { OrcamentosRepository } from "../repositories/OrcamentosRepository";
 // BuscarOrcamentoPorIdUseCase — busca um orçamento pelo id sempre no escopo
 // do negocioId (um negócio nunca acessa orçamento de outro). Se não achar,
 // lança erro de aplicação para a Presentation transformar em HTTP 404.
+@Injectable()
 export class BuscarOrcamentoPorIdUseCase {
   constructor(
     private readonly orcamentosRepository: OrcamentosRepository,
