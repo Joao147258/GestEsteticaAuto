@@ -23,6 +23,21 @@ async function bootstrap() {
     new HttpExceptionFilter(),
   );
 
+  // CORS: origens permitidas vêm de CORS_ORIGINS (env, separadas por vírgula).
+  // Sem a variável, libera apenas localhost de desenvolvimento. NUNCA usamos
+  // origin: true — em produção a lista vem do ambiente do Coolify.
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+
+  app.enableCors({
+    origin: corsOrigins?.length
+      ? corsOrigins
+      : ['http://localhost:3000', 'http://localhost:3001'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

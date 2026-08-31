@@ -1,1 +1,3 @@
-export class VeiculoNaoEncontradoError extends Error {}
+import { NotFoundError } from "../../../Shared/errors/not-found.error";
+
+export class VeiculoNaoEncontradoError extends NotFoundError {}

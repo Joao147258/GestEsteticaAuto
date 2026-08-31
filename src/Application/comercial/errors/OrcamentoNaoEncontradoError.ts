@@ -1,1 +1,3 @@
-export class OrcamentoNaoEncontradoError extends Error {}
+import { NotFoundError } from "../../../Shared/errors/not-found.error";
+
+export class OrcamentoNaoEncontradoError extends NotFoundError {}
