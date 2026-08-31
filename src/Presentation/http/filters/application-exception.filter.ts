@@ -15,6 +15,13 @@ import { montarCorpoErro } from './error-http-response';
 @Catch()
 export class ApplicationExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
+    // TEMPORÁRIO: log para diagnosticar o 500 na listagem de orçamentos.
+    console.error('[ApplicationExceptionFilter]', exception);
+    console.error(
+      '[ApplicationExceptionFilter stack]',
+      exception instanceof Error ? exception.stack : exception,
+    );
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
