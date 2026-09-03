@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "wpp:test": "tsx   src/IntegraçãoWPP/index.ts",
     "wpp:dev": "tsx   src/IntegraçãoWPP/index.ts",
-    "dbg": "tsx scripts/debug/index.ts"
+    "dbg": "tsx scripts/debug/index.ts",
+    "agent:map": "tsx tools/agent/mapa-projeto.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

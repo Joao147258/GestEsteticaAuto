@@ -1,0 +1,13 @@
+# Orientação para ferramentas/agentes (não substitui .gitignore)
+# Arquivos gerados, builds e caches que o agente NÃO precisa carregar.
+node_modules
+dist
+coverage
+.next
+src/generated
+*.log
+*.tmp
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
