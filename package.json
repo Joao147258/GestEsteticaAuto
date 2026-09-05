@@ -21,7 +21,15 @@
     "wpp:test": "tsx   src/IntegraçãoWPP/index.ts",
     "wpp:dev": "tsx   src/IntegraçãoWPP/index.ts",
     "dbg": "tsx scripts/debug/index.ts",
-    "agent:map": "tsx tools/agent/mapa-projeto.ts"
+    "agent:map": "tsx tools/agent/mapa-projeto.ts",
+    "agent:check-layers": "tsx tools/agent/check-layers.ts",
+    "agent:check-di": "tsx tools/agent/check-di.ts",
+    "agent:check-di-runtime": "jest --config ./test/jest-e2e.json test/app.e2e-spec.ts",
+    "agent:inventory": "tsx tools/agent/inventory-usecases.ts",
+    "agent:check": "tsx tools/agent/check-all.ts",
+    "validate:quick": "tsx tools/agent/check-layers.ts && tsc --noEmit",
+    "validate:related": "tsx tools/agent/validate-related.ts",
+    "validate:full": "tsx tools/agent/check-layers.ts && tsc --noEmit && jest && npm run build"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

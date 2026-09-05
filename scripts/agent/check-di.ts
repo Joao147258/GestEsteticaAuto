@@ -1,0 +1,1 @@
+../../tools/agent/check-di.ts
