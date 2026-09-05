@@ -1,9 +1,12 @@
+import { Injectable } from "@nestjs/common";
 import type { Cliente } from "../../../Domain";
 import type { BuscarClientePorDocumentoInput } from "../dtos/buscar-cliente-por-documento.input";
 import { ClientesRepository } from "../repositories/clientes.repository";
 
 // Busca um cliente pelo documento no escopo do negocioId.
 // Usado principalmente para validar duplicidade de documento.
+// @Injectable: obrigatório para o Nest injetar o ClientesRepository.
+@Injectable()
 export class BuscarClientePorDocumentoUseCase {
   constructor(private readonly clientesRepository: ClientesRepository) {}
 

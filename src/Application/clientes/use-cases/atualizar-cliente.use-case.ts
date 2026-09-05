@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { Cliente } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ValidationError } from "../../../Shared/errors/validation.error";
@@ -7,6 +8,8 @@ import { ClientesRepository } from "../repositories/clientes.repository";
 // Orquestra a atualização de um cliente existente: busca no escopo do
 // negocioId, valida duplicidade de documento e delega as alterações ao
 // domínio antes de persistir via contrato.
+// @Injectable: obrigatório para o Nest injetar o ClientesRepository.
+@Injectable()
 export class AtualizarClienteUseCase {
   constructor(private readonly clientesRepository: ClientesRepository) {}
 

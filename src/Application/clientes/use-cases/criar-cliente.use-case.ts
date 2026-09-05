@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Cliente } from "../../../Domain";
 import { ValidationError } from "../../../Shared/errors/validation.error";
 import type { CriarClienteInput } from "../dtos/criar-cliente.input";
@@ -5,6 +6,10 @@ import { ClientesRepository } from "../repositories/clientes.repository";
 
 // Orquestra a criação de um cliente: valida duplicidade de documento,
 // delega a criação da entidade ao domínio e persiste via contrato.
+// @Injectable é obrigatório para o Nest injetar o ClientesRepository no
+// constructor — sem ele o repository chega undefined e a rota responde 500
+// (mesmo padrão/lição do erro de DI histórico do módulo comercial).
+@Injectable()
 export class CriarClienteUseCase {
   constructor(private readonly clientesRepository: ClientesRepository) {}
 
@@ -29,6 +34,8 @@ export class CriarClienteUseCase {
       documento: input.documento ?? null,
       telefone: input.telefone ?? null,
       email: input.email ?? null,
+      observacoes: input.observacoes ?? null,
+      origemId: input.origemId ?? null,
     });
 
     await this.clientesRepository.salvar(cliente);

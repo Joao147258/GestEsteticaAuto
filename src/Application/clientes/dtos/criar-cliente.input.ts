@@ -9,4 +9,6 @@ export type CriarClienteInput = {
   documento?: string | null; // futura melhoria para tratar CPF ou CNPJ
   telefone?: string | null;
   email?: string | null;
+  observacoes?: string | null;
+  origemId?: string | null;
 };

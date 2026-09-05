@@ -53,4 +53,30 @@ describe("CriarClienteUseCase", () => {
     await expect(useCase.execute(input)).rejects.toThrow(ValidationError);
     expect(salvar).not.toHaveBeenCalled();
   });
+  it("cria cliente com observacoes e origem", async () => {
+    const salvar = jest.fn().mockResolvedValue(undefined);
+    const repositorio = {
+      buscarPorDocumento: jest.fn().mockResolvedValue(null),
+      salvar,
+    } as unknown as ClientesRepository;
+
+    const useCase = new CriarClienteUseCase(repositorio);
+    const cliente = await useCase.execute({
+      ...input,
+      observacoes: "Observações",
+      origemId: "orig-1",
+    });
+
+    expect(cliente).toBeInstanceOf(Cliente);
+    expect(cliente.negocioId).toBe("neg-1");
+    expect(cliente.nome).toBe("João da Silva");
+    expect(cliente.tipo).toBe("PESSOA_FISICA");
+    expect(cliente.observacoes).toBe("Observações");
+    expect(cliente.origemId).toBe("orig-1");
+    expect(repositorio.buscarPorDocumento).toHaveBeenCalledWith(
+      "neg-1",
+      "123.456.789-00",
+    );
+    expect(salvar).toHaveBeenCalledWith(cliente);
+  });
 });

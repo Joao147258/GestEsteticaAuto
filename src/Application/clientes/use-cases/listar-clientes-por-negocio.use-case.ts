@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { Cliente } from "../../../Domain";
 import { ValidationError } from "../../../Shared/errors/validation.error";
 import type { ListarClientesInput } from "../dtos/listar-clientes.input";
@@ -5,6 +6,8 @@ import { ClientesRepository } from "../repositories/clientes.repository";
 
 // Lista clientes de um negócio com busca e paginação opcionais.
 // Paginação padrão: página 1, até 20 registros.
+// @Injectable: obrigatório para o Nest injetar o ClientesRepository.
+@Injectable()
 export class ListarClientesPorNegocioUseCase {
   constructor(private readonly clientesRepository: ClientesRepository) {}
 
