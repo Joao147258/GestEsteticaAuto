@@ -1,0 +1,1 @@
+export { ListarVeiculosQueryDto } from './listar-veiculos-query.dto';

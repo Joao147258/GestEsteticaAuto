@@ -7,6 +7,7 @@
 export type AtualizarVeiculoInput = {
   negocioId: string;
   veiculoId: string;
+  clienteId?: string;
 
   placa?: string;
   marca?: string;
@@ -15,6 +16,9 @@ export type AtualizarVeiculoInput = {
   anoModelo?: number;
   cor?: string;
   quilometragem?: number;
+  chassi?: string;
+  renavam?: string;
+  
 
   observacoes?: string;
 };

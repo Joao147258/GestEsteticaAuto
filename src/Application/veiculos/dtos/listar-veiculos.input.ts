@@ -10,4 +10,6 @@ export type ListarVeiculosInput = {
 
   pagina?: number;
   limite?: number;
+  placa?: string;
+  status?: string;
 };
