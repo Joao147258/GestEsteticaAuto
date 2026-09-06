@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Veiculo } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ValidationError } from "../../../Shared/errors/validation.error";
@@ -9,6 +10,7 @@ import { VeiculosRepository } from "../repositories/veiculos.repository";
 // Validações da Application: cliente existe (depende de repository) e placa
 // não duplicada no negócio. A regra de campos obrigatórios (marca/modelo) e a
 // validação de placa são do Domain (Veiculo.criar).
+@Injectable()
 export class CriarVeiculoUseCase {
   constructor(
     private readonly veiculosRepository: VeiculosRepository,

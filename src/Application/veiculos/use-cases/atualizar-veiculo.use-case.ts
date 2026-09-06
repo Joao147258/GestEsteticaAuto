@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Veiculo } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ValidationError } from "../../../Shared/errors/validation.error";
@@ -8,6 +9,7 @@ import { VeiculosRepository } from "../repositories/veiculos.repository";
 // não entra na atualização comum). Validação de placa duplicada só acontece
 // quando a placa realmente muda. A edição dos campos é do Domain, via
 // Veiculo.atualizarDados (cada campo delega ao método específico com histórico).
+@Injectable()
 export class AtualizarVeiculoUseCase {
   constructor(
     private readonly veiculosRepository: VeiculosRepository,

@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { RemoverVeiculoInput } from "../dtos/remover-veiculo.input";
 import { VeiculosRepository } from "../repositories/veiculos.repository";
@@ -5,6 +6,7 @@ import { VeiculosRepository } from "../repositories/veiculos.repository";
 // Remove um veículo. V1: remoção simples. A regra de impedir remoção de
 // veículo com orçamento/OS/histórico financeiro entra quando os módulos
 // relacionados estiverem prontos.
+@Injectable()
 export class RemoverVeiculoUseCase {
   constructor(
     private readonly veiculosRepository: VeiculosRepository,

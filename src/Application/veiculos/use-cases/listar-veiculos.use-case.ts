@@ -1,9 +1,11 @@
+import { Injectable } from "@nestjs/common";
 import { Veiculo } from "../../../Domain";
 import type { ListarVeiculosInput } from "../dtos/listar-veiculos.input";
 import { VeiculosRepository } from "../repositories/veiculos.repository";
 
 // Lista os veículos de um negócio com filtros. Use case somente leitura:
 // não altera nem salva nada. Sem resultados, retorna lista vazia.
+@Injectable()
 export class ListarVeiculosUseCase {
   constructor(
     private readonly veiculosRepository: VeiculosRepository,
