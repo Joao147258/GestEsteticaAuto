@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { MovimentacaoEstoqueInternoProps } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { ListarMovimentacoesEstoqueInternoInput } from "../dtos/listar-movimentacoes-estoque-interno.input";
@@ -5,6 +6,7 @@ import { EstoqueInternoRepository } from "../repositories/estoque-interno.reposi
 
 // Lista as movimentações de um estoque interno (histórico real de saldo).
 // Reutiliza o getter do domínio — não cria entidade nova apenas para consulta.
+@Injectable()
 export class ListarMovimentacoesEstoqueInternoUseCase {
   constructor(
     private readonly estoquesRepository: EstoqueInternoRepository,

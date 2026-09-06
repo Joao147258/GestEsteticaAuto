@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Servico } from "../../../Domain";
 import { ValidationError } from "../../../Shared/errors/validation.error";
 import { ServicosRepository } from "../repositories/servicos.repository";
@@ -14,6 +15,7 @@ export type ListarServicosInput = {
 
 // Lista serviços de um negócio com busca, filtro de status e paginação.
 // Valores padrão definidos na Application (página 1, limite 20).
+@Injectable()
 export class ListarServicosUseCase {
   constructor(private readonly servicosRepository: ServicosRepository) {}
 

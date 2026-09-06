@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Servico } from "../../../Domain";
 import { ValidationError } from "../../../Shared/errors/validation.error";
 import type { CriarServicoInput } from "../dtos/criar-servico.input";
@@ -5,6 +6,7 @@ import { ServicosRepository } from "../repositories/servicos.repository";
 
 // Orquestra a criação de um serviço: valida duplicidade de nome no negócio,
 // delega a criação da entidade ao domínio e persiste via contrato.
+@Injectable()
 export class CriarServicoUseCase {
   constructor(private readonly servicosRepository: ServicosRepository) {}
 

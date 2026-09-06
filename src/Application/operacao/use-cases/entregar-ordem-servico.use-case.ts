@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { OrdemServico } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { EntregarOrdemServicoInput } from "../dtos/entregar-ordem-servico.input";
@@ -7,6 +8,7 @@ import { OrdensServicoRepository } from "../repositories/ordens-servico.reposito
 // Domain, via OrdemServico.entregar() — a Application não muda status
 // diretamente. Segue o padrão dos demais use cases de status da OS:
 // buscar → chamar o domínio → salvar → retornar.
+@Injectable()
 export class EntregarOrdemServicoUseCase {
   constructor(
     private readonly ordensServicoRepository: OrdensServicoRepository,

@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { TituloFinanceiro } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { RegistrarPagamentoInput } from "../dtos/registrar-pagamento.input";
@@ -10,6 +11,7 @@ import { TitulosReceberRepository } from "../repositories/titulos-receber.reposi
 // Decisão V1: o pagamento nasce PENDENTE no domínio e só CONFIRMADO compõe o
 // valor pago. Como a V1 não tem fluxo separado de confirmação manual, o
 // use-case confirma na sequência — o Domain valida saldo e recalcula status.
+@Injectable()
 export class RegistrarPagamentoUseCase {
   constructor(
     private readonly titulosReceberRepository: TitulosReceberRepository,

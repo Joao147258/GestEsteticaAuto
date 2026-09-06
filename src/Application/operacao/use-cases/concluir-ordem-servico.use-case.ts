@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { OrdemServico } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { ConcluirOrdemServicoInput } from "../dtos/concluir-ordem-servico.input";
@@ -8,6 +9,7 @@ import { OrdensServicoRepository } from "../repositories/ordens-servico.reposito
 // NÃO baixa estoque automaticamente — consumo é confirmado em fluxo próprio
 // (ConfirmarConsumoInsumosItemOSUseCase). O campo observacaoConclusao fica
 // disponível no DTO para evolução futura.
+@Injectable()
 export class ConcluirOrdemServicoUseCase {
   constructor(
     private readonly ordensServicoRepository: OrdensServicoRepository,

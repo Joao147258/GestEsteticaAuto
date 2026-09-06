@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { UnidadeMedida } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { CalcularConsumoInsumosItemOSInput } from "../dtos/calcular-consumo-insumos-item-os.input";
@@ -14,6 +15,7 @@ export type SugestaoConsumoInsumoItem = {
 
 // Calcula a sugestão de consumo de insumos de um item da ordem de serviço.
 // Operação apenas de leitura/cálculo — não altera estoque nem nada persistido.
+@Injectable()
 export class CalcularConsumoInsumosItemOSUseCase {
   constructor(
     private readonly ordensServicoRepository: OrdensServicoRepository,

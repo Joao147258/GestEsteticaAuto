@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { EstoqueInterno } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { AjustarQuantidadeEstoqueInternoInput } from "../dtos/ajustar-quantidade-estoque-interno.input";
@@ -6,6 +7,7 @@ import { EstoqueInternoRepository } from "../repositories/estoque-interno.reposi
 // Ajusta manualmente a quantidade (correção de saldo, inventário, ajuste
 // administrativo). Não usar para simular entrada/saída comum. A regra de
 // saldo não negativo continua no domínio.
+@Injectable()
 export class AjustarQuantidadeEstoqueInternoUseCase {
   constructor(
     private readonly estoquesRepository: EstoqueInternoRepository,

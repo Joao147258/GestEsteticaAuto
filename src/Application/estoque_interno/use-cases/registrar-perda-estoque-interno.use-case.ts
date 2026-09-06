@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { EstoqueInterno } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { RegistrarPerdaEstoqueInternoInput } from "../dtos/registrar-perda-estoque-interno.input";
@@ -5,6 +6,7 @@ import { EstoqueInternoRepository } from "../repositories/estoque-interno.reposi
 
 // Registra uma perda (avaria, vazamento, quebra, vencido) no estoque interno.
 // A regra de saldo insuficiente continua no domínio (EstoqueInternoError).
+@Injectable()
 export class RegistrarPerdaEstoqueInternoUseCase {
   constructor(
     private readonly estoquesRepository: EstoqueInternoRepository,

@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Servico } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ServicosRepository } from "../repositories/servicos.repository";
@@ -9,6 +10,7 @@ export type BuscarServicoInput = {
 };
 
 // Busca um serviço pelo id dentro do negócio, evitando acesso entre negócios.
+@Injectable()
 export class BuscarServicoUseCase {
   constructor(private readonly servicosRepository: ServicosRepository) {}
 

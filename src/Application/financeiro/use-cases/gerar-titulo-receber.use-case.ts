@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { TituloFinanceiro } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ValidationError } from "../../../Shared/errors/validation.error";
@@ -10,6 +11,7 @@ import { TitulosReceberRepository } from "../repositories/titulos-receber.reposi
 // Idempotente: se já existe título para a origem, retorna o existente (evita
 // duplicidade financeira para o mesmo orçamento). A regra de "pode gerar"
 // (parcelas, valores, soma) é do Domain, via TituloFinanceiro.criar.
+@Injectable()
 export class GerarTituloReceberUseCase {
   constructor(
     private readonly titulosReceberRepository: TitulosReceberRepository,

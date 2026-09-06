@@ -1,8 +1,10 @@
+import { Injectable } from "@nestjs/common";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { RemoverConsumoInsumoServicoInput } from "../dtos/remover-consumo-insumo-servico.input";
 import { ConsumosInsumoServicoRepository } from "../repositories/consumos-insumo-servico.repository";
 
 // Remove um consumo de insumo de um serviço, sempre no escopo do negocioId.
+@Injectable()
 export class RemoverConsumoInsumoServicoUseCase {
   constructor(
     private readonly consumosRepository: ConsumosInsumoServicoRepository,

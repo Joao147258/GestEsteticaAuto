@@ -1,9 +1,11 @@
+import { Injectable } from "@nestjs/common";
 import { TituloFinanceiro } from "../../../Domain";
 import type { ListarTitulosReceberInput } from "../dtos/listar-titulos-receber.input";
 import { TitulosReceberRepository } from "../repositories/titulos-receber.repository";
 
 // Lista os títulos a receber de um negócio com filtros. Use case somente
 // leitura: não altera nem salva nada. Sem resultados, retorna lista vazia.
+@Injectable()
 export class ListarTitulosReceberUseCase {
   constructor(
     private readonly titulosReceberRepository: TitulosReceberRepository,

@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { EstoqueInterno } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { RegistrarEntradaEstoqueInternoInput } from "../dtos/registrar-entrada-estoque-interno.input";
@@ -5,6 +6,7 @@ import { EstoqueInternoRepository } from "../repositories/estoque-interno.reposi
 
 // Registra uma entrada (reposição/compra) no estoque interno.
 // A Application apenas localiza o estoque e delega a movimentação ao domínio.
+@Injectable()
 export class RegistrarEntradaEstoqueInternoUseCase {
   constructor(
     private readonly estoquesRepository: EstoqueInternoRepository,

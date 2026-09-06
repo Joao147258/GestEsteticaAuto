@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { TituloFinanceiro } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { BuscarTituloReceberInput } from "../dtos/buscar-titulo-receber.input";
@@ -5,6 +6,7 @@ import { TitulosReceberRepository } from "../repositories/titulos-receber.reposi
 
 // Busca um título pelo id, sempre no escopo do negocioId — um negócio nunca
 // acessa título de outro. Se não encontrar, lança NotFoundError.
+@Injectable()
 export class BuscarTituloReceberUseCase {
   constructor(
     private readonly titulosReceberRepository: TitulosReceberRepository,

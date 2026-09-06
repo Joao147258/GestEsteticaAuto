@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { ConsumoInsumoServico } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ValidationError } from "../../../Shared/errors/validation.error";
@@ -9,6 +10,7 @@ import { ServicosRepository } from "../repositories/servicos.repository";
 // Orquestra o vínculo entre serviço e produto como consumo operacional:
 // valida existência de serviço/produto no negócio e o tipo de uso do produto
 // (só INSUMO_INTERNO ou AMBOS podem virar insumo), antes de criar e salvar.
+@Injectable()
 export class AdicionarConsumoInsumoServicoUseCase {
   constructor(
     private readonly consumosRepository: ConsumosInsumoServicoRepository,

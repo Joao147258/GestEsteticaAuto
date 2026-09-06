@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { OrdemServico } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { AtualizarOrdemServicoInput } from "../dtos/atualizar-ordem-servico.input";
@@ -7,6 +8,7 @@ import { OrdensServicoRepository } from "../repositories/ordens-servico.reposito
 // status — troca de status passa pelos use-cases específicos (iniciar/pausar/
 // concluir/cancelar). A regra do que é editável é do Domain, via
 // OrdemServico.atualizarDadosOperacionais().
+@Injectable()
 export class AtualizarOrdemServicoUseCase {
   constructor(
     private readonly ordensServicoRepository: OrdensServicoRepository,

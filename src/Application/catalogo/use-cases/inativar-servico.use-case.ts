@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ServicosRepository } from "../repositories/servicos.repository";
 
@@ -9,6 +10,7 @@ export type InativarServicoInput = {
 
 // Inativa um serviço chamando o método da entidade (não apaga o registro,
 // preservando orçamentos e ordens de serviço que o referenciam).
+@Injectable()
 export class InativarServicoUseCase {
   constructor(private readonly servicosRepository: ServicosRepository) {}
 

@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { OrdemServico } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import { ValidationError } from "../../../Shared/errors/validation.error";
@@ -11,6 +12,7 @@ import { OrdensServicoRepository } from "../repositories/ordens-servico.reposito
 // (no máximo uma OS por orçamento) → criar OS com os itens do orçamento →
 // salvar. Não recalcula preço, não baixa estoque, não cria pagamento.
 // Idempotente: se já existe OS para o orçamento, retorna a existente.
+@Injectable()
 export class GerarOrdemServicoUseCase {
   constructor(
     private readonly ordensServicoRepository: OrdensServicoRepository,

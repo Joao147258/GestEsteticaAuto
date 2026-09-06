@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import {
   EstoqueInternoError,
   UnidadeMedida,
@@ -47,6 +48,7 @@ export type ResultadoConfirmacaoConsumoItemOS = {
 // para o serviço, converte a unidade para a do estoque, solicita a baixa ao
 // domínio (EstoqueInterno.registrarSaidaInterna) e persiste o estoque alterado.
 // Não baixa estoque automaticamente por criar a OS — a confirmação é explícita.
+@Injectable()
 export class ConfirmarConsumoInsumosItemOSUseCase {
   constructor(
     private readonly ordensServicoRepository: OrdensServicoRepository,

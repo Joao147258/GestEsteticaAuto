@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { EstoqueInterno } from "../../../Domain";
 import { ValidationError } from "../../../Shared/errors/validation.error";
 import type { CriarItemEstoqueInternoInput } from "../dtos/criar-item-estoque-interno.input";
@@ -6,6 +7,7 @@ import { EstoqueInternoRepository } from "../repositories/estoque-interno.reposi
 // Cria o registro de estoque interno de um produto do negócio.
 // Um produto só possui um estoque interno no negócio — se já existir, rejeita.
 // O saldo inicial entra como movimentação ENTRADA (regra do domínio).
+@Injectable()
 export class CriarItemEstoqueInternoUseCase {
   constructor(
     private readonly estoquesRepository: EstoqueInternoRepository,

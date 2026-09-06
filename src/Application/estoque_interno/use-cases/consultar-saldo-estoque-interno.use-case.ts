@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { EstoqueInterno } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { ConsultarEstoqueInternoInput } from "../dtos/consultar-estoque-interno.input";
@@ -5,6 +6,7 @@ import { EstoqueInternoRepository } from "../repositories/estoque-interno.reposi
 
 // Consulta o saldo do estoque interno de um produto do negócio.
 // Busca sempre escopada por negocioId — não permite acesso a outro negócio.
+@Injectable()
 export class ConsultarSaldoEstoqueInternoUseCase {
   constructor(
     private readonly estoquesRepository: EstoqueInternoRepository,

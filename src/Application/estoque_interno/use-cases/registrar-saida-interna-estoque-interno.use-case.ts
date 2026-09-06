@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import type { EstoqueInterno } from "../../../Domain";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
 import type { RegistrarSaidaInternaEstoqueInternoInput } from "../dtos/registrar-saida-interna.input";
@@ -7,6 +8,7 @@ import { EstoqueInternoRepository } from "../repositories/estoque-interno.reposi
 // A referência operacional é opcional: saída manual legítima não depende de OS
 // e não passa pela proteção de duplicidade (que vale para baixas operacionais
 // estruturadas). A regra de saldo continua sendo do domínio.
+@Injectable()
 export class RegistrarSaidaInternaEstoqueInternoUseCase {
   constructor(
     private readonly estoquesRepository: EstoqueInternoRepository,
