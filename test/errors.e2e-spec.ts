@@ -10,12 +10,15 @@ import { validationPipeConfig } from './../src/Presentation/http/pipes/validatio
 import { NotFoundError } from './../src/Shared/errors/not-found.error';
 import { ValidationError } from './../src/Shared/errors/validation.error';
 
+import { TokenService } from './../src/Application/auth/services/token.service';
+
 // Resposta de erro padronizada (e2e).
 // Reproduz o bootstrap real (main.ts aplica os mesmos pipes e filtros globais)
 // e exercita a tradução de erros da Application/Domain para HTTP com mocks dos
 // use cases — sem banco real, sem Prisma.
 describe('Resposta de erro padronizada (e2e)', () => {
   let app: INestApplication;
+  let token: string;
 
   const executarCriar = jest.fn();
 
@@ -38,6 +41,16 @@ describe('Resposta de erro padronizada (e2e)', () => {
       new HttpExceptionFilter(),
     );
     await app.init();
+
+    const tokenService = app.get(TokenService);
+    token = await tokenService.gerarToken({
+      sub: 'usr-admin',
+      username: 'admin',
+      role: 'ADMIN',
+      negocioId: 'neg-1',
+      nome: 'Admin',
+      email: 'admin@gestcorp.com.br',
+    });
   });
 
   afterEach(async () => {
@@ -60,6 +73,7 @@ describe('Resposta de erro padronizada (e2e)', () => {
 
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send(payloadValido());
 
     expect(resposta.status).toBe(400);
@@ -77,6 +91,7 @@ describe('Resposta de erro padronizada (e2e)', () => {
 
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send(payloadValido());
 
     expect(resposta.status).toBe(404);
@@ -95,6 +110,7 @@ describe('Resposta de erro padronizada (e2e)', () => {
 
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send(payloadValido());
 
     expect(resposta.status).toBe(400);
@@ -112,6 +128,7 @@ describe('Resposta de erro padronizada (e2e)', () => {
 
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send(payloadValido());
 
     expect(resposta.status).toBe(404);
@@ -130,6 +147,7 @@ describe('Resposta de erro padronizada (e2e)', () => {
 
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send(payloadValido());
 
     expect(resposta.status).toBe(500);

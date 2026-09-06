@@ -41,6 +41,7 @@ export class PrismaUsuariosRepository implements UsuariosRepository {
     const raw = await this.prisma.usuario.findFirst({
       where: {
         OR: [
+          { username: { equals: idf, mode: 'insensitive' } },
           { email: { equals: idf, mode: 'insensitive' } },
           { email: { startsWith: `${idf}@`, mode: 'insensitive' } },
         ],

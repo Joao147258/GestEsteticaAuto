@@ -5,24 +5,32 @@ import { UsuarioAutenticado } from '../../../../Shared/types/usuario-autenticado
 // Garante que senhas ou hashes nunca sejam expostos e padroniza a resposta para o frontend.
 export class AuthPresenter {
   static toLoginHTTP(output: LoginOutput) {
+    const username = output.usuario.username || output.usuario.usuario;
+    const role = output.usuario.role || output.usuario.papel || 'ADMIN';
     return {
       accessToken: output.accessToken,
       usuario: {
         id: output.usuario.id,
         nome: output.usuario.nome,
-        usuario: output.usuario.usuario,
-        papel: output.usuario.papel,
+        username,
+        usuario: username,
+        role,
+        papel: role,
         negocioId: output.usuario.negocioId,
       },
     };
   }
 
   static toMeHTTP(user: UsuarioAutenticado) {
+    const username = user.username || user.usuario;
+    const role = user.role || user.papel || 'ADMIN';
     return {
       id: user.id,
       nome: user.nome,
-      usuario: user.usuario,
-      papel: user.papel,
+      username,
+      usuario: username,
+      role,
+      papel: role,
       negocioId: user.negocioId,
     };
   }

@@ -4,9 +4,11 @@ export interface UsuarioProps {
   id: string;
   negocioId: string;
   nome: string;
+  username?: string | null;
   email: string;
   senhaHash: string;
   ativo: boolean;
+  role: string;
   criadoEm: Date;
   atualizadoEm: Date;
 }
@@ -15,6 +17,8 @@ export interface UsuarioProps {
 export interface CriarUsuarioProps {
   negocioId: string;
   nome: string;
+  username?: string | null;
   email: string;
   senhaHash?: string;
+  role?: string;
 }

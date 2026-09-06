@@ -60,20 +60,54 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     const resMeSemToken = await request(server).get('/auth/me');
     expect(resMeSemToken.status).toBe(401);
 
+    // 0.2.1 Tentativa de acessar rota administrativa /admin/* sem token deve retornar 401
+    const resAdminSemToken = await request(server).get(`/admin/clientes?negocioId=${tenant}`);
+    expect(resAdminSemToken.status).toBe(401);
+
+    // 0.2.2 Tentativa de acessar rota administrativa /admin/* com token inválido deve retornar 401
+    const resAdminTokenInvalido = await request(server)
+      .get(`/admin/clientes?negocioId=${tenant}`)
+      .set('Authorization', 'Bearer token.invalido.123');
+    expect(resAdminTokenInvalido.status).toBe(401);
+
     // 0.3 Login com usuário administrador seeded (João Dantas)
+    const passJoao = process.env.SEED_PASSWORD_JOAO;
+    const passVinicius = process.env.SEED_PASSWORD_VINICIUS;
+    if (!passJoao || !passVinicius) {
+      throw new Error(
+        'Variáveis SEED_PASSWORD_JOAO e SEED_PASSWORD_VINICIUS devem estar configuradas no .env.',
+      );
+    }
+
     const resLogin = await request(server)
       .post('/auth/login')
       .send({
         usuario: 'joao.dantas',
-        senha: process.env.GESTCORP_PASSWORD_JOAO || 'Admin@123456',
+        senha: passJoao,
       });
     expect(resLogin.status).toBe(200);
     expect(resLogin.body.accessToken).toBeDefined();
     expect(resLogin.body.usuario.nome).toBe('João Dantas');
+    expect(resLogin.body.usuario.username).toBe('joao.dantas');
+    expect(resLogin.body.usuario.role).toBe('ADMIN');
     expect(resLogin.body.usuario.papel).toBe('ADMIN');
     expect(resLogin.body.usuario.negocioId).toBe(tenant);
+    expect(resLogin.body.usuario.senhaHash).toBeUndefined();
 
     const token = resLogin.body.accessToken;
+
+    // 0.3.1 Login com segundo administrador seeded (Vinicius Salvador)
+    const resLoginVinicius = await request(server)
+      .post('/auth/login')
+      .send({
+        username: 'vinicius.salvador',
+        password: passVinicius,
+      });
+    expect(resLoginVinicius.status).toBe(200);
+    expect(resLoginVinicius.body.accessToken).toBeDefined();
+    expect(resLoginVinicius.body.usuario.username).toBe('vinicius.salvador');
+    expect(resLoginVinicius.body.usuario.role).toBe('ADMIN');
+    expect(resLoginVinicius.body.usuario.senhaHash).toBeUndefined();
 
     // 0.4 Consulta do perfil atual em /auth/me com token Bearer
     const resMe = await request(server)
@@ -81,6 +115,8 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(resMe.status).toBe(200);
     expect(resMe.body.nome).toBe('João Dantas');
+    expect(resMe.body.username).toBe('joao.dantas');
+    expect(resMe.body.role).toBe('ADMIN');
     expect(resMe.body.negocioId).toBe(tenant);
 
     // -------------------------------------------------------------
@@ -96,6 +132,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     } else {
       const resNovoCliente = await request(server)
         .post('/admin/clientes')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           negocioId: tenant,
           nome: `Cliente E2E ${Date.now()}`,
@@ -112,13 +149,15 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
 
     let veiculoId: string;
     const resVeiculos = await request(server)
-      .get(`/admin/veiculos?negocioId=${tenant}`);
+      .get(`/admin/veiculos?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
 
     if (resVeiculos.status === 200 && Array.isArray(resVeiculos.body) && resVeiculos.body.length > 0) {
       veiculoId = resVeiculos.body[0].id;
     } else {
       const resNovoVeiculo = await request(server)
         .post('/admin/veiculos')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           negocioId: tenant,
           clienteId,
@@ -133,13 +172,15 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
 
     let servicoId: string;
     const resServicos = await request(server)
-      .get(`/admin/servicos?negocioId=${tenant}`);
+      .get(`/admin/servicos?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
 
     if (resServicos.status === 200 && Array.isArray(resServicos.body) && resServicos.body.length > 0) {
       servicoId = resServicos.body[0].id;
     } else {
       const resNovoServico = await request(server)
         .post('/admin/servicos')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           negocioId: tenant,
           nome: `Polimento Cristalizado E2E ${Date.now()}`,
@@ -155,6 +196,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // -------------------------------------------------------------
     const resOrcamento = await request(server)
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         clienteId,
@@ -175,12 +217,14 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // Abrir Orçamento (RASCUNHO -> EM_ABERTO)
     const resAbrir = await request(server)
       .post(`/admin/orcamentos/${orcamentoId}/abrir`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ negocioId: tenant });
     expect(resAbrir.status).toBe(201);
 
     // Aprovar Orçamento (EM_ABERTO -> ACEITO)
     const resAceite = await request(server)
       .post(`/admin/orcamentos/${orcamentoId}/aprovar`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ negocioId: tenant });
     expect(resAceite.status).toBe(201);
     expect(resAceite.body.status).toBe('ACEITO');
@@ -191,6 +235,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 3.1 Gerar OS a partir do orçamento aprovado
     const resGerarOS = await request(server)
       .post('/admin/ordens-servico')
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         orcamentoId,
@@ -202,7 +247,8 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
 
     // 3.2 Buscar detalhes da OS gerada
     const resBuscarOS = await request(server)
-      .get(`/admin/ordens-servico/${osId}?negocioId=${tenant}`);
+      .get(`/admin/ordens-servico/${osId}?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(resBuscarOS.status).toBe(200);
     expect(resBuscarOS.body.id).toBe(osId);
     expect(resBuscarOS.body.itens.length).toBeGreaterThan(0);
@@ -210,6 +256,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 3.3 Atualizar dados da OS (previsões e observações)
     const resAtualizarOS = await request(server)
       .patch(`/admin/ordens-servico/${osId}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         observacoes: 'Cuidado redobrado na pintura',
@@ -222,6 +269,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 3.4 Iniciar execução da OS (ABERTA -> EM_EXECUCAO)
     const resIniciarOS = await request(server)
       .post(`/admin/ordens-servico/${osId}/iniciar`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ negocioId: tenant });
     expect(resIniciarOS.status).toBe(201);
     expect(resIniciarOS.body.status).toBe('EM_EXECUCAO');
@@ -229,6 +277,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 3.5 Pausar execução da OS (EM_EXECUCAO -> PAUSADA)
     const resPausarOS = await request(server)
       .post(`/admin/ordens-servico/${osId}/pausar`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         motivo: 'Aguardando tempo de secagem do verniz',
@@ -239,6 +288,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 3.6 Concluir execução da OS (PAUSADA / EM_EXECUCAO -> CONCLUIDA)
     const resConcluirOS = await request(server)
       .post(`/admin/ordens-servico/${osId}/concluir`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         observacaoConclusao: 'Polimento finalizado e inspecionado com sucesso',
@@ -249,6 +299,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 3.8 Entregar veículo da OS (CONCLUIDA -> ENTREGUE)
     const resEntregarOS = await request(server)
       .post(`/admin/ordens-servico/${osId}/entregar`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ negocioId: tenant });
     expect(resEntregarOS.status).toBe(201);
     expect(resEntregarOS.body.status).toBe('ENTREGUE');
@@ -259,6 +310,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 4.1 Gerar Título a Receber a partir do orçamento concluído
     const resGerarTitulo = await request(server)
       .post('/admin/financeiro/titulos')
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         orcamentoId,
@@ -276,6 +328,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 4.2 Registrar pagamento parcial de R$ 200,00 via PIX
     const resPagto1 = await request(server)
       .post(`/admin/financeiro/titulos/${tituloId}/pagamentos`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         parcelaId,
@@ -291,6 +344,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // 4.3 Registrar pagamento restante de R$ 250,00 via CARTAO_DEBITO
     const resPagto2 = await request(server)
       .post(`/admin/financeiro/titulos/${tituloId}/pagamentos`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         negocioId: tenant,
         parcelaId,
@@ -308,7 +362,8 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // -------------------------------------------------------------
     // 5.1 Dashboard Geral
     const resDashGeral = await request(server)
-      .get(`/admin/dashboard/geral?negocioId=${tenant}`);
+      .get(`/admin/dashboard/geral?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(resDashGeral.status).toBe(200);
     expect(resDashGeral.body.comercial).toBeDefined();
     expect(resDashGeral.body.operacional).toBeDefined();
@@ -316,20 +371,23 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
 
     // 5.2 Dashboard Comercial
     const resDashComercial = await request(server)
-      .get(`/admin/dashboard/comercial?negocioId=${tenant}`);
+      .get(`/admin/dashboard/comercial?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(resDashComercial.status).toBe(200);
     expect(resDashComercial.body.totalOrcamentos).toBeGreaterThanOrEqual(1);
 
     // 5.3 Dashboard Operacional
     const resDashOperacional = await request(server)
-      .get(`/admin/dashboard/operacional?negocioId=${tenant}`);
+      .get(`/admin/dashboard/operacional?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(resDashOperacional.status).toBe(200);
     expect(resDashOperacional.body.totalOrdens).toBeGreaterThanOrEqual(1);
     expect(resDashOperacional.body.ordensPorStatus.ENTREGUE).toBeGreaterThanOrEqual(1);
 
     // 5.4 Dashboard Financeiro
     const resDashFinanceiro = await request(server)
-      .get(`/admin/dashboard/financeiro?negocioId=${tenant}`);
+      .get(`/admin/dashboard/financeiro?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(resDashFinanceiro.status).toBe(200);
     expect(resDashFinanceiro.body.totalRecebidoMes).toBeGreaterThanOrEqual(450);
 
@@ -339,6 +397,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // Idempotência na geração de OS (re-chamada com mesmo orcamentoId retorna a mesma OS)
     const resOSDuplicada = await request(server)
       .post('/admin/ordens-servico')
+      .set('Authorization', `Bearer ${token}`)
       .send({ negocioId: tenant, orcamentoId });
     expect(resOSDuplicada.status).toBe(201);
     expect(resOSDuplicada.body.id).toBe(osId);
@@ -346,6 +405,7 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     // Idempotência na geração de Título (re-chamada com mesmo orcamentoId retorna o mesmo Título)
     const resTituloDuplicado = await request(server)
       .post('/admin/financeiro/titulos')
+      .set('Authorization', `Bearer ${token}`)
       .send({ negocioId: tenant, orcamentoId });
     expect(resTituloDuplicado.status).toBe(201);
     expect(resTituloDuplicado.body.id).toBe(tituloId);

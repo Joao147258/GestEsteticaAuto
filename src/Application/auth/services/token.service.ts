@@ -1,10 +1,11 @@
-// Payload contido no token de autenticação JWT da V1.
 export interface TokenPayload {
   sub: string;
+  username: string;
+  role: string;
   negocioId: string;
   nome: string;
   email: string;
-  papel: string;
+  papel?: string;
 }
 
 // Contrato de infraestrutura para assinatura e verificação de tokens de autenticação.

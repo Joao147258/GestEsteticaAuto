@@ -21,9 +21,11 @@ export class Usuario {
       id: randomUUID(),
       negocioId: props.negocioId,
       nome,
+      username: props.username?.trim() || null,
       email,
       senhaHash: props.senhaHash?.trim() ?? "",
       ativo: true,
+      role: props.role?.trim() || "ADMIN",
       criadoEm: new Date(),
       atualizadoEm: new Date(),
     });
@@ -35,7 +37,9 @@ export class Usuario {
     return new Usuario({
       ...props,
       nome: props.nome.trim(),
+      username: props.username ? props.username.trim() : null,
       email: props.email.trim(),
+      role: props.role || "ADMIN",
     });
   }
 
@@ -63,6 +67,21 @@ export class Usuario {
       throw new NegocioError("Email do usuário é obrigatório");
     }
     this.props.email = emailNormalizado;
+    this.props.atualizadoEm = new Date();
+  }
+
+  alterarUsername(username: string): void {
+    const usernameNormalizado = username?.trim();
+    this.props.username = usernameNormalizado || null;
+    this.props.atualizadoEm = new Date();
+  }
+
+  alterarRole(role: string): void {
+    const roleNormalizada = role?.trim();
+    if (!roleNormalizada) {
+      throw new NegocioError("Role do usuário é obrigatória");
+    }
+    this.props.role = roleNormalizada;
     this.props.atualizadoEm = new Date();
   }
 
@@ -94,6 +113,10 @@ export class Usuario {
     return this.props.nome;
   }
 
+  get username(): string | null {
+    return this.props.username ?? null;
+  }
+
   get email(): string {
     return this.props.email;
   }
@@ -104,6 +127,10 @@ export class Usuario {
 
   get ativo(): boolean {
     return this.props.ativo;
+  }
+
+  get role(): string {
+    return this.props.role || "ADMIN";
   }
 
   get criadoEm(): Date {

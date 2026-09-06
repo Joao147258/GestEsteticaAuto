@@ -8,12 +8,17 @@ import {
 import { AppModule } from './../src/Presentation/app.module';
 import { validationPipeConfig } from './../src/Presentation/http/pipes/validation-pipe.config';
 
+import { TokenService } from './../src/Application/auth/services/token.service';
+import { ApplicationExceptionFilter } from './../src/Presentation/http/filters/application-exception.filter';
+import { HttpExceptionFilter } from './../src/Presentation/http/filters/http-exception.filter';
+
 // Validação global de entrada (e2e).
 // Reproduz o bootstrap real (main.ts aplica o mesmo validationPipeConfig) e
 // exercita o comportamento do pipe com mocks dos use cases — sem banco real,
 // sem Prisma. Testa o saneamento do contrato HTTP, não regra de negócio.
 describe('Validação global de entrada (e2e)', () => {
   let app: INestApplication;
+  let token: string;
 
   const executarCriar = jest.fn();
   const executarListar = jest.fn();
@@ -34,7 +39,21 @@ describe('Validação global de entrada (e2e)', () => {
     app = moduleFixture.createNestApplication();
     // Mesmo pipe global do main.ts, para o teste refletir o comportamento real.
     app.useGlobalPipes(validationPipeConfig);
+    app.useGlobalFilters(
+      new ApplicationExceptionFilter(),
+      new HttpExceptionFilter(),
+    );
     await app.init();
+
+    const tokenService = app.get(TokenService);
+    token = await tokenService.gerarToken({
+      sub: 'usr-admin',
+      username: 'admin',
+      role: 'ADMIN',
+      negocioId: 'neg-1',
+      nome: 'Admin',
+      email: 'admin@gestcorp.com.br',
+    });
   });
 
   afterEach(async () => {
@@ -58,6 +77,7 @@ describe('Validação global de entrada (e2e)', () => {
   it('rejeita campos extras no body com 400', async () => {
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send({ ...payloadValido(), campoDesconhecido: 'x' });
 
     expect(resposta.status).toBe(400);
@@ -67,6 +87,7 @@ describe('Validação global de entrada (e2e)', () => {
   it('rejeita origem no body de POST /admin/orcamentos com 400', async () => {
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send({ ...payloadValido(), origem: 'SITE' });
 
     expect(resposta.status).toBe(400);
@@ -76,6 +97,7 @@ describe('Validação global de entrada (e2e)', () => {
   it('rejeita payload inválido (campo obrigatório ausente) com 400', async () => {
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send({ negocioId: 'neg-1' });
 
     expect(resposta.status).toBe(400);
@@ -87,6 +109,7 @@ describe('Validação global de entrada (e2e)', () => {
 
     const resposta = await request(app.getHttpServer())
       .post('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .send(payloadValido());
 
     expect(resposta.status).toBe(201);
@@ -98,6 +121,7 @@ describe('Validação global de entrada (e2e)', () => {
 
     const resposta = await request(app.getHttpServer())
       .get('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .query({
         negocioId: 'neg-1',
         status: 'RASCUNHO',
@@ -119,6 +143,7 @@ describe('Validação global de entrada (e2e)', () => {
   it('rejeita query sem negocioId obrigatório com 400', async () => {
     const resposta = await request(app.getHttpServer())
       .get('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .query({ status: 'RASCUNHO' });
 
     expect(resposta.status).toBe(400);
@@ -128,6 +153,7 @@ describe('Validação global de entrada (e2e)', () => {
   it('rejeita status inválido na query com 400', async () => {
     const resposta = await request(app.getHttpServer())
       .get('/admin/orcamentos')
+      .set('Authorization', `Bearer ${token}`)
       .query({ negocioId: 'neg-1', status: 'INVALIDO' });
 
     expect(resposta.status).toBe(400);

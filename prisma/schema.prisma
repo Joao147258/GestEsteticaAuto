@@ -76,9 +76,11 @@ model Usuario {
   id           String   @id @default(cuid())
   negocioId    String
   nome         String
+  username     String?  @unique
   email        String
   senhaHash    String
   ativo        Boolean  @default(true)
+  role         String   @default("ADMIN")
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 

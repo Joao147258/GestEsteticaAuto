@@ -6,4 +6,7 @@ export interface UsuarioAutenticado {
   email: string;
   usuario: string;
   papel: string;
+  username?: string;
+  role?: string;
 }
+

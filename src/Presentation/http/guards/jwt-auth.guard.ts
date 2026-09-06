@@ -34,50 +34,31 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request & { user?: any }>();
     const authHeader = request.headers['authorization'];
 
-    if (authHeader) {
-      const [bearer, token] = authHeader.split(' ');
-      if (bearer !== 'Bearer' || !token) {
-        throw new UnauthorizedError('Formato do token de autenticação inválido. Utilize Bearer <token>.');
-      }
-
-      const payload = await this.tokenService.verificarToken(token);
-      const nomeUsuario = payload.email.includes('@')
-        ? payload.email.split('@')[0]
-        : payload.email;
-
-      request.user = {
-        id: payload.sub,
-        negocioId: payload.negocioId,
-        nome: payload.nome,
-        email: payload.email,
-        usuario: nomeUsuario,
-        papel: payload.papel || 'ADMIN',
-      };
-
-      return true;
-    }
-
-    // Rota /auth/me exige obrigatoriamente token JWT
-    if (request.url?.includes('/auth/me')) {
+    if (!authHeader) {
       throw new UnauthorizedError('Token de autenticação ausente.');
     }
 
-    // Modo de Compatibilidade da V1 (Fase 1): permite requisições administrativas
-    // sem token para validação de DTO / contrato via ValidationPipe
-    const negocioId =
-      request.query?.negocioId ||
-      request.body?.negocioId;
-
-    if (negocioId && typeof negocioId === 'string') {
-      request.user = {
-        id: 'compat-user',
-        negocioId: negocioId.trim(),
-        nome: 'Administrador (Compatibilidade)',
-        email: 'admin@gestcorp.com.br',
-        usuario: 'admin',
-        papel: 'ADMIN',
-      };
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token) {
+      throw new UnauthorizedError('Formato do token de autenticação inválido. Utilize Bearer <token>.');
     }
+
+    const payload = await this.tokenService.verificarToken(token);
+    const nomeUsuario = payload.username || (payload.email?.includes('@')
+      ? payload.email.split('@')[0]
+      : payload.email);
+    const papelUsuario = payload.role || payload.papel || 'ADMIN';
+
+    request.user = {
+      id: payload.sub,
+      negocioId: payload.negocioId,
+      nome: payload.nome,
+      email: payload.email,
+      username: nomeUsuario,
+      usuario: nomeUsuario,
+      role: papelUsuario,
+      papel: papelUsuario,
+    };
 
     return true;
   }

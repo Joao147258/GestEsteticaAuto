@@ -28,10 +28,10 @@ describe('AuthController', () => {
       },
     });
 
-    const body: LoginDto = {
+    const body = Object.assign(new LoginDto(), {
       usuario: 'joao.dantas',
       senha: 'SecretPassword123',
-    };
+    });
 
     const response = await controller.login(body);
 
@@ -41,7 +41,9 @@ describe('AuthController', () => {
       usuario: {
         id: 'usr-1',
         nome: 'João Dantas',
+        username: 'joao.dantas',
         usuario: 'joao.dantas',
+        role: 'ADMIN',
         papel: 'ADMIN',
         negocioId: 'gestcorp-auto-demo',
       },
@@ -63,7 +65,9 @@ describe('AuthController', () => {
     expect(response).toEqual({
       id: 'usr-1',
       nome: 'João Dantas',
+      username: 'joao.dantas',
       usuario: 'joao.dantas',
+      role: 'ADMIN',
       papel: 'ADMIN',
       negocioId: 'gestcorp-auto-demo',
     });

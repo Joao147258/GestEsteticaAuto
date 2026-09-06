@@ -5,8 +5,10 @@ export interface LoginOutput {
     id: string;
     negocioId: string;
     nome: string;
-    usuario: string;
+    username: string;
+    usuario?: string;
     email: string;
-    papel: string;
+    role: string;
+    papel?: string;
   };
 }

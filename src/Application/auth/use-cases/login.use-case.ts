@@ -18,8 +18,8 @@ export class LoginUseCase {
   ) {}
 
   async execute(input: LoginInput): Promise<LoginOutput> {
-    const identificador = input.usuario?.trim();
-    const senha = input.senha;
+    const identificador = (input.username || input.usuario)?.trim();
+    const senha = input.senha || input.password;
 
     if (!identificador || !senha) {
       throw new ValidationError("Usuário e senha são obrigatórios.");
@@ -39,19 +39,23 @@ export class LoginUseCase {
       throw new UnauthorizedError("Credenciais inválidas.");
     }
 
+    const nomeUsuario = usuario.username || (usuario.email.includes("@")
+      ? usuario.email.split("@")[0]
+      : usuario.email);
+
+    const papelUsuario = usuario.role || "ADMIN";
+
     const payload = {
       sub: usuario.id,
+      username: nomeUsuario,
+      role: papelUsuario,
       negocioId: usuario.negocioId,
       nome: usuario.nome,
       email: usuario.email,
-      papel: "ADMIN",
+      papel: papelUsuario,
     };
 
     const accessToken = await this.tokenService.gerarToken(payload);
-
-    const nomeUsuario = usuario.email.includes("@")
-      ? usuario.email.split("@")[0]
-      : usuario.email;
 
     return {
       accessToken,
@@ -59,9 +63,11 @@ export class LoginUseCase {
         id: usuario.id,
         negocioId: usuario.negocioId,
         nome: usuario.nome,
+        username: nomeUsuario,
         usuario: nomeUsuario,
         email: usuario.email,
-        papel: "ADMIN",
+        role: papelUsuario,
+        papel: papelUsuario,
       },
     };
   }

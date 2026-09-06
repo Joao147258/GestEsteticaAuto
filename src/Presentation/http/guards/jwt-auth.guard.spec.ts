@@ -66,6 +66,8 @@ describe('JwtAuthGuard', () => {
       negocioId: 'gestcorp-auto-demo',
       nome: 'João Dantas',
       email: 'joao.dantas@gestcorp.com.br',
+      username: 'joao.dantas',
+      role: 'ADMIN',
       papel: 'ADMIN',
     });
 
@@ -82,32 +84,34 @@ describe('JwtAuthGuard', () => {
       negocioId: 'gestcorp-auto-demo',
       nome: 'João Dantas',
       email: 'joao.dantas@gestcorp.com.br',
+      username: 'joao.dantas',
       usuario: 'joao.dantas',
+      role: 'ADMIN',
       papel: 'ADMIN',
     });
   });
 
-  it('permite fallback em modo compatibilidade quando negocioId estiver presente na query', async () => {
+  it('rejeita com UnauthorizedError rota protegida /admin sem token mesmo com negocioId', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
     const req: any = {
+      url: '/admin/orcamentos',
       headers: {},
       query: { negocioId: 'tenant-demo' },
       body: {},
     };
     const ctx = criarMockContext(req);
 
-    const canActivate = await guard.canActivate(ctx);
-
-    expect(canActivate).toBe(true);
-    expect(req.user.negocioId).toBe('tenant-demo');
+    await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedError);
   });
 
-  it('lança UnauthorizedError na rota /auth/me se não houver token mesmo com negocioId', async () => {
+  it('rejeita com UnauthorizedError quando token for inválido ou expirado', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
+    tokenService.verificarToken.mockRejectedValue(
+      new UnauthorizedError('Token de autenticação inválido ou expirado.'),
+    );
     const req: any = {
-      url: '/auth/me',
-      headers: {},
-      query: { negocioId: 'tenant-demo' },
+      url: '/admin/clientes',
+      headers: { authorization: 'Bearer token.invalido' },
     };
     const ctx = criarMockContext(req);
 

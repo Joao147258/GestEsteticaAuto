@@ -1,13 +1,29 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 // LoginDto — valida o payload de autenticação HTTP.
-// O identificador pode ser o nome de usuário (ex: joao.dantas) ou email completo.
+// Suporta tanto `username` quanto `usuario`, e `senha` ou `password`.
 export class LoginDto {
-  @IsString({ message: 'usuario deve ser uma string válida' })
-  @IsNotEmpty({ message: 'usuario é obrigatório para autenticação' })
-  usuario: string;
+  @IsOptional()
+  @IsString({ message: 'username deve ser uma string válida' })
+  username?: string;
 
+  @IsOptional()
+  @IsString({ message: 'usuario deve ser uma string válida' })
+  usuario?: string;
+
+  @IsOptional()
   @IsString({ message: 'senha deve ser uma string válida' })
-  @IsNotEmpty({ message: 'senha é obrigatória para autenticação' })
-  senha: string;
+  senha?: string;
+
+  @IsOptional()
+  @IsString({ message: 'password deve ser uma string válida' })
+  password?: string;
+
+  getIdentificador(): string {
+    return (this.username || this.usuario || '').trim();
+  }
+
+  getSenha(): string {
+    return (this.senha || this.password || '').trim();
+  }
 }

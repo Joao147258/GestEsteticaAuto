@@ -25,6 +25,13 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() body: LoginDto) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[AUTH LOGIN DTO]', {
+        username: body.username,
+        usuario: (body as any).usuario,
+        temSenha: Boolean(body.getSenha()),
+      });
+    }
     const resultado = await this.authService.login(body);
     return AuthPresenter.toLoginHTTP(resultado);
   }

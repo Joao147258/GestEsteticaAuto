@@ -8,9 +8,11 @@ export class PrismaUsuarioMapper {
       id: raw.id,
       negocioId: raw.negocioId,
       nome: raw.nome,
+      username: raw.username ?? null,
       email: raw.email,
       senhaHash: raw.senhaHash,
       ativo: raw.ativo,
+      role: raw.role ?? "ADMIN",
       criadoEm: raw.criadoEm,
       atualizadoEm: raw.atualizadoEm,
     });
@@ -21,9 +23,11 @@ export class PrismaUsuarioMapper {
       id: usuario.id,
       negocioId: usuario.negocioId,
       nome: usuario.nome,
+      username: usuario.username ?? null,
       email: usuario.email,
       senhaHash: usuario.senhaHash,
       ativo: usuario.ativo,
+      role: usuario.role ?? "ADMIN",
       criadoEm: usuario.criadoEm,
       atualizadoEm: usuario.atualizadoEm,
     };

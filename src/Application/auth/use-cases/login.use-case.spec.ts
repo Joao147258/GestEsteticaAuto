@@ -59,6 +59,8 @@ describe("LoginUseCase", () => {
     expect(hashService.compare).toHaveBeenCalledWith("SenhaCorreta@123", "$2a$10$hashedpassword");
     expect(tokenService.gerarToken).toHaveBeenCalledWith({
       sub: "usr-123",
+      username: "joao.dantas",
+      role: "ADMIN",
       negocioId: "gestcorp-auto-demo",
       nome: "João Dantas",
       email: "joao.dantas@gestcorp.com.br",
@@ -66,8 +68,31 @@ describe("LoginUseCase", () => {
     });
     expect(output.accessToken).toBe("jwt.token.valido");
     expect(output.usuario.id).toBe("usr-123");
+    expect(output.usuario.username).toBe("joao.dantas");
+    expect(output.usuario.role).toBe("ADMIN");
     expect(output.usuario.usuario).toBe("joao.dantas");
     expect(output.usuario.papel).toBe("ADMIN");
+    expect((output as any).senhaHash).toBeUndefined();
+    expect((output.usuario as any).senhaHash).toBeUndefined();
+  });
+
+  it("JWT payload contém sub, username e role", async () => {
+    usuariosRepository.buscarPorIdentificador.mockResolvedValue(usuarioMock);
+    hashService.compare.mockResolvedValue(true);
+    tokenService.gerarToken.mockResolvedValue("jwt.token.valido");
+
+    await useCase.execute({
+      username: "joao.dantas",
+      password: "SenhaCorreta@123",
+    });
+
+    expect(tokenService.gerarToken).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sub: "usr-123",
+        username: "joao.dantas",
+        role: "ADMIN",
+      }),
+    );
   });
 
   it("lança ValidationError se identificador ou senha forem omitidos", async () => {

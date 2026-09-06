@@ -9,8 +9,8 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     return this.loginUseCase.execute({
-      usuario: dto.usuario,
-      senha: dto.senha,
+      username: dto.getIdentificador(),
+      senha: dto.getSenha(),
     });
   }
 }
