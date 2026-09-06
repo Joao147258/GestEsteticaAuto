@@ -1,9 +1,12 @@
+import { Injectable } from "@nestjs/common";
 import { NotFoundError } from "../../../Shared/errors/not-found.error";
+import { ValidationError } from "../../../Shared/errors/validation.error";
 import type { AtualizarServicoInput } from "../dtos/atualizar-servico.input";
 import { ServicosRepository } from "../repositories/servicos.repository";
 
 // Altera somente os campos enviados de um serviço existente.
 // As mudanças são aplicadas na entidade do domínio e salvas via contrato.
+@Injectable()
 export class AtualizarServicoUseCase {
     constructor(private readonly servicosRepository: ServicosRepository) { }
 
@@ -17,8 +20,20 @@ export class AtualizarServicoUseCase {
             // Se o serviço não for encontrado, lança um erro de não encontrado.
             throw new NotFoundError("Serviço não encontrado.");
         }
+
         if (input.nome !== undefined) {
-            //
+            // Impede duplicidade de nome dentro do mesmo negócio se outro serviço já o utilizar.
+            const servicoExistente = await this.servicosRepository.buscarPorNome(
+                input.negocioId,
+                input.nome,
+            );
+
+            if (servicoExistente && servicoExistente.id !== servico.id) {
+                throw new ValidationError(
+                    "Já existe um serviço com este nome neste negócio.",
+                );
+            }
+
             servico.atualizarNome(input.nome);
         }
         

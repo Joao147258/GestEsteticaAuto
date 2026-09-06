@@ -7,6 +7,7 @@ export * from "./repositories/consumos-insumo-servico.repository";
 export * from "./repositories/produtos.repository";
 export * from "./repositories/servicos.repository";
 export * from "./use-cases/adicionar-consumo-insumo-servico.use-case";
+export * from "./use-cases/ativar-servico.use-case";
 export * from "./use-cases/atualizar-servico.use-case";
 export * from "./use-cases/buscar-servico.use-case";
 export * from "./use-cases/criar-servico.use-case";
