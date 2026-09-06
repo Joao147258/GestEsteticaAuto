@@ -66,5 +66,36 @@ describe("Usuario", () => {
       usuario.ativar();
       expect(usuario.ativo).toBe(true);
     });
+
+    it("alterarSenhaHash atualiza e valida vazio", () => {
+      const usuario = Usuario.criar({
+        negocioId: "neg-1",
+        nome: "João",
+        email: "joao@email.com",
+      });
+      usuario.alterarSenhaHash("$2a$10$xyz");
+      expect(usuario.senhaHash).toBe("$2a$10$xyz");
+      expect(() => usuario.alterarSenhaHash("   ")).toThrow(NegocioError);
+    });
+
+    it("reconstituir remonta entidade existente com todos os atributos", () => {
+      const agora = new Date();
+      const usuario = Usuario.reconstituir({
+        id: "usr-1",
+        negocioId: "neg-1",
+        nome: " João Dantas ",
+        email: " joao@email.com ",
+        senhaHash: "$2a$10$xyz",
+        ativo: true,
+        criadoEm: agora,
+        atualizadoEm: agora,
+      });
+
+      expect(usuario.id).toBe("usr-1");
+      expect(usuario.nome).toBe("João Dantas");
+      expect(usuario.email).toBe("joao@email.com");
+      expect(usuario.senhaHash).toBe("$2a$10$xyz");
+      expect(usuario.ativo).toBe(true);
+    });
   });
 });

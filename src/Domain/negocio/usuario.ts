@@ -22,12 +22,30 @@ export class Usuario {
       negocioId: props.negocioId,
       nome,
       email,
-      // Sem autenticação nesta etapa — campo mantido para evolução futura.
-      senhaHash: "",
+      senhaHash: props.senhaHash?.trim() ?? "",
       ativo: true,
       criadoEm: new Date(),
       atualizadoEm: new Date(),
     });
+  }
+
+  // Reconstrói uma entidade existente a partir dos dados persistidos no banco.
+  // Não revalida campos de criação nem gera novo UUID.
+  static reconstituir(props: UsuarioProps): Usuario {
+    return new Usuario({
+      ...props,
+      nome: props.nome.trim(),
+      email: props.email.trim(),
+    });
+  }
+
+  alterarSenhaHash(senhaHash: string): void {
+    const hashNormalizado = senhaHash?.trim();
+    if (!hashNormalizado) {
+      throw new NegocioError("Hash da senha é obrigatório");
+    }
+    this.props.senhaHash = hashNormalizado;
+    this.props.atualizadoEm = new Date();
   }
 
   alterarNome(nome: string): void {

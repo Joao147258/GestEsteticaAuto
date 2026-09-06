@@ -41,15 +41,55 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
     }
   });
 
-  it('deve executar o fluxo completo de Orçamento -> OS -> Financeiro -> Dashboard com sucesso', async () => {
+  it('deve executar o fluxo completo de Autenticação -> Orçamento -> OS -> Financeiro -> Dashboard com sucesso', async () => {
     const server = app.getHttpServer();
+
+    // -------------------------------------------------------------
+    // 0. AUTENTICAÇÃO V1: Login, Proteção e Obtenção do Token JWT
+    // -------------------------------------------------------------
+    // 0.1 Tentativa de login com senha incorreta deve retornar 401
+    const resLoginInvalido = await request(server)
+      .post('/auth/login')
+      .send({
+        usuario: 'joao.dantas',
+        senha: 'SenhaIncorreta@999',
+      });
+    expect(resLoginInvalido.status).toBe(401);
+
+    // 0.2 Tentativa de acessar /auth/me sem token deve retornar 401
+    const resMeSemToken = await request(server).get('/auth/me');
+    expect(resMeSemToken.status).toBe(401);
+
+    // 0.3 Login com usuário administrador seeded (João Dantas)
+    const resLogin = await request(server)
+      .post('/auth/login')
+      .send({
+        usuario: 'joao.dantas',
+        senha: process.env.GESTCORP_PASSWORD_JOAO || 'Admin@123456',
+      });
+    expect(resLogin.status).toBe(200);
+    expect(resLogin.body.accessToken).toBeDefined();
+    expect(resLogin.body.usuario.nome).toBe('João Dantas');
+    expect(resLogin.body.usuario.papel).toBe('ADMIN');
+    expect(resLogin.body.usuario.negocioId).toBe(tenant);
+
+    const token = resLogin.body.accessToken;
+
+    // 0.4 Consulta do perfil atual em /auth/me com token Bearer
+    const resMe = await request(server)
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${token}`);
+    expect(resMe.status).toBe(200);
+    expect(resMe.body.nome).toBe('João Dantas');
+    expect(resMe.body.negocioId).toBe(tenant);
 
     // -------------------------------------------------------------
     // 1. DADOS BASE: Cliente, Veículo e Serviço de Catálogo
     // -------------------------------------------------------------
     let clienteId: string;
     const resClientes = await request(server)
-      .get(`/admin/clientes?negocioId=${tenant}`);
+      .get(`/admin/clientes?negocioId=${tenant}`)
+      .set('Authorization', `Bearer ${token}`);
 
     if (resClientes.status === 200 && Array.isArray(resClientes.body) && resClientes.body.length > 0) {
       clienteId = resClientes.body[0].id;
@@ -309,5 +349,12 @@ describe('Ciclo Completo de Ponta a Ponta (e2e)', () => {
       .send({ negocioId: tenant, orcamentoId });
     expect(resTituloDuplicado.status).toBe(201);
     expect(resTituloDuplicado.body.id).toBe(tituloId);
+
+    // -------------------------------------------------------------
+    // 7. ENCERRAMENTO DE SESSÃO: POST /auth/logout
+    // -------------------------------------------------------------
+    const resLogout = await request(server).post('/auth/logout');
+    expect(resLogout.status).toBe(200);
+    expect(resLogout.body.message).toBe('Sessão encerrada com sucesso.');
   });
 });

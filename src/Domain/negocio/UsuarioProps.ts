@@ -12,9 +12,9 @@ export interface UsuarioProps {
 }
 
 // Dados necessários para criar um novo Usuario.
-// Monousuário na primeira versão; sem senha/autenticação nesta etapa.
 export interface CriarUsuarioProps {
   negocioId: string;
   nome: string;
   email: string;
+  senhaHash?: string;
 }

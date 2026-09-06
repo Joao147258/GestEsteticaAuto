@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { PrismaService } from '../../../Infrastructure/database/prisma/prisma.service';
+import { Public } from '../decorators/public.decorator';
 
 // HealthController — endpoint mínimo de diagnóstico.
 // Verifica a conectividade com o banco via SELECT 1 (não depende de tabela).
@@ -8,6 +9,7 @@ import { PrismaService } from '../../../Infrastructure/database/prisma/prisma.se
 export class HealthController {
   constructor(private readonly prismaService: PrismaService) {}
 
+  @Public()
   @Get()
   async check() {
     try {
