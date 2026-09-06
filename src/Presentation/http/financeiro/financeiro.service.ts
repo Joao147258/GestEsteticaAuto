@@ -136,7 +136,9 @@ export class FinanceiroService {
       tituloId,
       parcelaFinanceiraId: dto.parcelaId,
       valor: dto.valorPago,
-      formaPagamentoId: dto.formaPagamentoId || 'PADRAO',
+      formaPagamentoId:
+        dto.formaPagamentoId ||
+        (dto.formaPagamento ? dto.formaPagamento.toUpperCase() : 'PADRAO'),
       formaPagamentoDescricao: dto.formaPagamento || 'Forma Padrão',
       dataPagamento: dto.dataPagamento ? new Date(dto.dataPagamento) : undefined,
       observacao: dto.observacoes,

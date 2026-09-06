@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ComercialError } from '../../../Domain/comercial';
 import { AppError } from '../../../Shared/errors/app-error';
@@ -14,12 +14,21 @@ import { montarCorpoErro } from './error-http-response';
 // A tradução de erro → HTTP é responsabilidade da Presentation.
 @Catch()
 export class ApplicationExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ApplicationExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
     const { statusCode, message } = this.traduzir(exception);
+
+    if (statusCode === 500) {
+      this.logger.error(
+        'Erro 500 não tratado:',
+        exception instanceof Error ? exception.stack : String(exception),
+      );
+    }
 
     response.status(statusCode).json(montarCorpoErro(statusCode, message, request.url));
   }

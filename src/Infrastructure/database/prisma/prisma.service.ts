@@ -10,8 +10,9 @@ export class PrismaService
 {
   private readonly logger = new Logger(PrismaService.name);
 
-  constructor(configService: ConfigService) {
-    const connectionString = configService.get<string>('DATABASE_URL');
+  constructor(configService?: ConfigService) {
+    const connectionString =
+      configService?.get<string>('DATABASE_URL') || process.env.DATABASE_URL;
     if (!connectionString) {
       throw new Error('Variável de ambiente DATABASE_URL não configurada.');
     }

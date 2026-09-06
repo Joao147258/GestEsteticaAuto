@@ -51,6 +51,18 @@ export class PrismaTitulosReceberRepository implements TitulosReceberRepository 
             where: { id: dataPagamento.id },
           });
           if (!existente) {
+            // Garante integridade referencial da forma de pagamento no tenant
+            await tx.formaPagamento.upsert({
+              where: { id: dataPagamento.formaPagamentoId },
+              create: {
+                id: dataPagamento.formaPagamentoId,
+                negocioId: dataPagamento.negocioId,
+                nome: dataPagamento.formaPagamentoDescricao || dataPagamento.formaPagamentoId,
+                status: 'ATIVA',
+              },
+              update: {},
+            });
+
             await tx.pagamento.create({ data: dataPagamento });
           }
         }
