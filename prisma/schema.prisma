@@ -405,6 +405,9 @@ model Orcamento {
   numero              String?
   politicaComercialId String?
   condicaoComercialId String?
+  formaPagamentoPrevista String?
+  condicaoPagamento      String?
+  observacaoPagamento    String?
   status              String    @default("RASCUNHO")
   observacoes         String?
   subtotal            Decimal   @default(0) @db.Decimal(10, 2)

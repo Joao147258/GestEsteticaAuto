@@ -33,9 +33,16 @@ export interface OrdemServicoProps {
   previsaoInicio?: Date | null;
   previsaoConclusao?: Date | null;
   observacoes?: string | null;
+  pagamentoCombinado?: PagamentoCombinadoProps | null;
   alteracoes: RegistroAlteracaoOperacao[];
   criadoEm: Date;
   atualizadoEm: Date;
+}
+
+export interface PagamentoCombinadoProps {
+  formaPagamentoPrevista?: string | null;
+  condicaoPagamento?: string | null;
+  observacaoPagamento?: string | null;
 }
 
 // Dados necessários para criar uma nova OrdemServico.
@@ -49,6 +56,7 @@ export interface CriarOrdemServicoProps {
   numero?: string | null;
   responsavelId?: string | null;
   observacoes?: string | null;
+  pagamentoCombinado?: PagamentoCombinadoProps | null;
   previsaoInicio?: Date | null;
   previsaoConclusao?: Date | null;
 }

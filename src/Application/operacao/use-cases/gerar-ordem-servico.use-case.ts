@@ -41,7 +41,9 @@ export class GerarOrdemServicoUseCase {
     );
 
     if (osExistente) {
-      return osExistente;
+      throw new ValidationError(
+        "Este orçamento já possui uma Ordem de Serviço vinculada.",
+      );
     }
 
     // A OS exige veículo (trabalho executado no veículo) — o orçamento pode
@@ -58,6 +60,11 @@ export class GerarOrdemServicoUseCase {
       veiculoId: orcamento.veiculoId,
       orcamentoId: orcamento.id,
       observacoes: orcamento.observacoes,
+      pagamentoCombinado: {
+        formaPagamentoPrevista: orcamento.formaPagamentoPrevista,
+        condicaoPagamento: orcamento.condicaoPagamento,
+        observacaoPagamento: orcamento.observacaoPagamento,
+      },
     });
 
     for (const item of orcamento.itens) {

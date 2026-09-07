@@ -27,6 +27,18 @@ export class AprovarOrcamentoUseCase {
       );
     }
 
+    if (
+      input.formaPagamentoPrevista !== undefined ||
+      input.condicaoPagamento !== undefined ||
+      input.observacaoPagamento !== undefined
+    ) {
+      orcamento.definirPagamentoCombinado({
+        formaPagamentoPrevista: input.formaPagamentoPrevista,
+        condicaoPagamento: input.condicaoPagamento,
+        observacaoPagamento: input.observacaoPagamento,
+      });
+    }
+
     orcamento.aceitar();
 
     await this.orcamentosRepository.salvar(orcamento);

@@ -12,7 +12,14 @@ import { PrismaItemOrdemServicoMapper } from "./prisma-item-ordem-servico.mapper
 // preservados no banco (o salvar não os apaga).
 export class PrismaOrdemServicoMapper {
   static toDomain(
-    raw: PrismaOrdemServico & { itens?: PrismaItemOrdemServico[] },
+    raw: PrismaOrdemServico & {
+      itens?: PrismaItemOrdemServico[];
+      orcamento?: {
+        formaPagamentoPrevista?: string | null;
+        condicaoPagamento?: string | null;
+        observacaoPagamento?: string | null;
+      } | null;
+    },
   ): OrdemServico {
     return OrdemServico.reconstituir({
       id: raw.id,
@@ -38,6 +45,13 @@ export class PrismaOrdemServicoMapper {
       previsaoInicio: raw.previsaoInicio ?? null,
       previsaoConclusao: raw.previsaoConclusao ?? null,
       observacoes: raw.observacoes ?? null,
+      pagamentoCombinado: raw.orcamento
+        ? {
+            formaPagamentoPrevista: raw.orcamento.formaPagamentoPrevista ?? null,
+            condicaoPagamento: raw.orcamento.condicaoPagamento ?? null,
+            observacaoPagamento: raw.orcamento.observacaoPagamento ?? null,
+          }
+        : null,
       alteracoes: [],
       criadoEm: raw.criadoEm,
       atualizadoEm: raw.atualizadoEm,

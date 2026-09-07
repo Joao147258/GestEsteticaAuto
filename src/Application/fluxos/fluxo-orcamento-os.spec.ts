@@ -34,6 +34,7 @@ import { AbrirOrcamentoUseCase } from "../comercial/usecases/AbrirOrcamentoUseCa
 import { AdicionarItemOrcamentoUseCase } from "../comercial/usecases/AdicionarItemOrcamentoUseCase";
 import { AprovarOrcamentoUseCase } from "../comercial/usecases/AprovarOrcamentoUseCase";
 import { CriarOrcamentoUseCase } from "../comercial/usecases/CriarOrcamentoUseCase";
+import { ValidationError } from "../../Shared/errors/validation.error";
 import { OrcamentoNaoAprovadoError } from "../operacao/errors/OrcamentoNaoAprovadoError";
 import { OrdensServicoRepository } from "../operacao/repositories/ordens-servico.repository";
 import { AtualizarOrdemServicoUseCase } from "../operacao/use-cases/atualizar-ordem-servico.use-case";
@@ -483,13 +484,14 @@ describe("Fluxo completo orçamento → OS (Application em memória)", () => {
       .map((a) => a.valorNovo);
     expect(statuses).toEqual(["EM_ABERTO", "ACEITO"]);
 
-    // 14. Não converte o mesmo orçamento duas vezes (idempotente: retorna a
-    //     mesma OS e não cria outra).
-    const osDeNovo = await gerarOs.execute({
-      negocioId: NEGOCIO,
-      orcamentoId: criado.id,
-    });
-    expect(osDeNovo.id).toBe(os.id);
+    // 14. Não converte o mesmo orçamento duas vezes (rejeita com ValidationError
+    //     se tentar gerar uma segunda OS para o mesmo orçamento).
+    await expect(
+      gerarOs.execute({
+        negocioId: NEGOCIO,
+        orcamentoId: criado.id,
+      }),
+    ).rejects.toThrow(ValidationError);
     expect(await ordensRepo.listarPorNegocio({ negocioId: NEGOCIO })).toHaveLength(1);
   });
 

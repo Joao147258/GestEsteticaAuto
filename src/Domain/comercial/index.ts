@@ -14,3 +14,4 @@ export * from "./politica_comercial";
 export * from "./status_aceite_orcamento_types";
 export * from "./status_orcamento_types";
 export * from "./tipo_item_orcamento_types";
+export * from "./pagamento_orcamento_types";

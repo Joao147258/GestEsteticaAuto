@@ -54,7 +54,7 @@ export class PrismaOrcamentosRepository implements OrcamentosRepository {
   ): Promise<Orcamento | null> {
     const orcamento = await this.prisma.orcamento.findFirst({
       where: { id: orcamentoId, negocioId },
-      include: { itens: true, aceites: true },
+      include: { itens: true, aceites: true, ordemServico: { select: { id: true } } },
     });
 
     return orcamento ? PrismaOrcamentoMapper.toDomain(orcamento) : null;
@@ -109,7 +109,7 @@ export class PrismaOrcamentosRepository implements OrcamentosRepository {
             }
           : {}),
       },
-      include: { itens: true, aceites: true },
+      include: { itens: true, aceites: true, ordemServico: { select: { id: true } } },
       skip: (pagina - 1) * limite,
       take: limite,
       orderBy: { criadoEm: "desc" },

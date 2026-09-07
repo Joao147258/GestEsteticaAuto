@@ -17,6 +17,7 @@ export class PrismaOrcamentoMapper {
     raw: PrismaOrcamento & {
       itens?: PrismaItemOrcamento[];
       aceites?: PrismaAceiteOrcamento[];
+      ordemServico?: { id: string } | null;
     },
   ): Orcamento {
     return Orcamento.reconstituir({
@@ -24,6 +25,10 @@ export class PrismaOrcamentoMapper {
       negocioId: raw.negocioId,
       clienteId: raw.clienteId,
       veiculoId: raw.veiculoId ?? null,
+      ordemServicoId: raw.ordemServico?.id ?? null,
+      formaPagamentoPrevista: raw.formaPagamentoPrevista ?? null,
+      condicaoPagamento: raw.condicaoPagamento ?? null,
+      observacaoPagamento: raw.observacaoPagamento ?? null,
       origem: PrismaOrcamentoMapper.toDomainOrigem(raw.origem),
       itens: (raw.itens ?? []).map(PrismaItemOrcamentoMapper.toDomain),
       politicaComercialId: raw.politicaComercialId ?? null,
@@ -53,6 +58,9 @@ export class PrismaOrcamentoMapper {
       origem: orcamento.origem,
       politicaComercialId: orcamento.politicaComercialId ?? null,
       condicaoComercialId: orcamento.condicaoComercialId ?? null,
+      formaPagamentoPrevista: orcamento.formaPagamentoPrevista ?? null,
+      condicaoPagamento: orcamento.condicaoPagamento ?? null,
+      observacaoPagamento: orcamento.observacaoPagamento ?? null,
       status: orcamento.status,
       observacoes: orcamento.observacoes ?? null,
       subtotal: orcamento.subtotal,

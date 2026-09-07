@@ -29,6 +29,9 @@ export type CriarOrcamentoDTO = {
   veiculoId: string;
   itens: CriarOrcamentoItemDTO[];
   origem?: OrigemOrcamento;
+  formaPagamentoPrevista?: string;
+  condicaoPagamento?: string;
+  observacaoPagamento?: string;
   validadeEm?: Date;
   observacoes?: string;
 };

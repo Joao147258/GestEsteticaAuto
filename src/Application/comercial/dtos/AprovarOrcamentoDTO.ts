@@ -4,4 +4,7 @@
 export type AprovarOrcamentoDTO = {
   negocioId: string;
   orcamentoId: string;
+  formaPagamentoPrevista?: string;
+  condicaoPagamento?: string;
+  observacaoPagamento?: string;
 };

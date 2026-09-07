@@ -22,6 +22,13 @@ import { TituloFinanceiroPresenter } from './presenters/titulo-financeiro.presen
 export class FinanceiroController {
   constructor(private readonly financeiroService: FinanceiroService) {}
 
+  // GET /admin/financeiro/formas-pagamento
+  // Retorna as modalidades de pagamento suportadas pelo sistema na V1.
+  @Get('formas-pagamento')
+  async listarFormasPagamento(@Query('negocioId') queryNegocioId?: string) {
+    return this.financeiroService.listarFormasPagamento(queryNegocioId);
+  }
+
   // POST /admin/financeiro/titulos
   // Gera um título financeiro a receber a partir de um orçamento aprovado ou lançamento avulso.
   // Garante idempotência: se o orçamento já possui cobrança gerada, retorna a cobrança existente.

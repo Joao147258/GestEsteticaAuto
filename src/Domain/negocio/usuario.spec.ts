@@ -86,6 +86,7 @@ describe("Usuario", () => {
         nome: " João Dantas ",
         email: " joao@email.com ",
         senhaHash: "$2a$10$xyz",
+        role: "ADMIN",
         ativo: true,
         criadoEm: agora,
         atualizadoEm: agora,

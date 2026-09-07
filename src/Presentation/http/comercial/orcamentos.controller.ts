@@ -67,6 +67,9 @@ export class OrcamentosController {
       clienteId: dto.clienteId,
       veiculoId: dto.veiculoId,
       observacoes: dto.observacoes,
+      formaPagamentoPrevista: dto.formaPagamentoPrevista,
+      condicaoPagamento: dto.condicaoPagamento,
+      observacaoPagamento: dto.observacaoPagamento,
       itens: dto.itens.map((item) => ({
         servicoId: item.servicoId,
         quantidade: item.quantidade,
@@ -181,6 +184,9 @@ export class OrcamentosController {
     const resultado = await this.aprovarOrcamentoUseCase.executar({
       negocioId: dto.negocioId,
       orcamentoId: id,
+      formaPagamentoPrevista: dto.formaPagamentoPrevista,
+      condicaoPagamento: dto.condicaoPagamento,
+      observacaoPagamento: dto.observacaoPagamento,
     });
     return OrcamentoPresenter.paraHttp(resultado);
   }

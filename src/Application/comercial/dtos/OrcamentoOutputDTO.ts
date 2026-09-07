@@ -24,6 +24,12 @@ export type OrcamentoOutputDTO = {
   negocioId: string;
   clienteId: string;
   veiculoId: string | null;
+  ordemServicoId?: string | null;
+  formaPagamentoPrevista?: string | null;
+  formaPagamentoPrevistaLabel?: string | null;
+  condicaoPagamento?: string | null;
+  condicaoPagamentoLabel?: string | null;
+  observacaoPagamento?: string | null;
   origem: OrigemOrcamento;
   status: StatusOrcamento;
   itens: OrcamentoItemOutputDTO[];

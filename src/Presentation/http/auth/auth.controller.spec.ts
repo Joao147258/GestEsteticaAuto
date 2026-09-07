@@ -23,8 +23,10 @@ describe('AuthController', () => {
         negocioId: 'gestcorp-auto-demo',
         nome: 'João Dantas',
         usuario: 'joao.dantas',
+        username: 'joao.dantas',
         email: 'joao.dantas@gestcorp.com.br',
         papel: 'ADMIN',
+        role: 'ADMIN',
       },
     });
 

@@ -20,9 +20,15 @@ export class RegistrarPagamentoDto {
   @IsNotEmpty({ message: 'parcelaId é obrigatório para identificar a parcela a ser baixada' })
   parcelaId: string;
 
+  @IsOptional()
   @IsNumber({}, { message: 'valorPago deve ser numérico' })
   @IsPositive({ message: 'valorPago deve ser maior que zero' })
-  valorPago: number;
+  valorPago?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'valor deve ser numérico' })
+  @IsPositive({ message: 'valor deve ser maior que zero' })
+  valor?: number;
 
   @IsOptional()
   @IsString({ message: 'formaPagamentoId deve ser uma string' })
@@ -31,6 +37,10 @@ export class RegistrarPagamentoDto {
   @IsOptional()
   @IsString({ message: 'formaPagamento deve ser uma string descritiva' })
   formaPagamento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'formaPagamentoDescricao deve ser uma string descritiva' })
+  formaPagamentoDescricao?: string;
 
   @IsOptional()
   @IsDateString({}, { message: 'dataPagamento deve ser uma data ISO válida' })

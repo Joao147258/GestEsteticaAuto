@@ -12,6 +12,10 @@ export interface OrcamentoProps {
   negocioId: string;
   clienteId: string;
   veiculoId?: string | null;
+  ordemServicoId?: string | null;
+  formaPagamentoPrevista?: string | null;
+  condicaoPagamento?: string | null;
+  observacaoPagamento?: string | null;
   // Canal de entrada: PAINEL (padrão) ou SITE (futuro). O site usa o mesmo
   // fluxo de orçamento — apenas informa a origem na criação.
   origem: OrigemOrcamento;
@@ -40,6 +44,9 @@ export interface CriarOrcamentoProps {
   // Opcional: quando ausente, o orçamento nasce com origem PAINEL.
   origem?: OrigemOrcamento;
   observacoes?: string | null;
+  formaPagamentoPrevista?: string | null;
+  condicaoPagamento?: string | null;
+  observacaoPagamento?: string | null;
   validoAte?: Date | null;
   politicaComercialId?: string | null;
   condicaoComercialId?: string | null;

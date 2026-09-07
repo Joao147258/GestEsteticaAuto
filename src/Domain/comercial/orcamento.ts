@@ -42,6 +42,10 @@ export class Orcamento {
       negocioId,
       clienteId,
       veiculoId: props.veiculoId?.trim() || null,
+      ordemServicoId: null,
+      formaPagamentoPrevista: props.formaPagamentoPrevista?.trim() || null,
+      condicaoPagamento: props.condicaoPagamento?.trim() || null,
+      observacaoPagamento: props.observacaoPagamento?.trim() || null,
       origem,
       itens: [],
       politicaComercialId: props.politicaComercialId?.trim() || null,
@@ -394,11 +398,45 @@ export class Orcamento {
     return this.props.alteracoes.map((alteracao) => ({ ...alteracao }));
   }
 
+  // Permite definir ou atualizar as condições comerciais de pagamento combinadas com o cliente.
+  definirPagamentoCombinado(dados: {
+    formaPagamentoPrevista?: string | null;
+    condicaoPagamento?: string | null;
+    observacaoPagamento?: string | null;
+  }): void {
+    if (dados.formaPagamentoPrevista !== undefined) {
+      this.props.formaPagamentoPrevista = dados.formaPagamentoPrevista?.trim() || null;
+    }
+    if (dados.condicaoPagamento !== undefined) {
+      this.props.condicaoPagamento = dados.condicaoPagamento?.trim() || null;
+    }
+    if (dados.observacaoPagamento !== undefined) {
+      this.props.observacaoPagamento = dados.observacaoPagamento?.trim() || null;
+    }
+    this.props.atualizadoEm = new Date();
+  }
+
   get criadoEm(): Date {
     return this.props.criadoEm;
   }
 
   get atualizadoEm(): Date {
     return this.props.atualizadoEm;
+  }
+
+  get ordemServicoId(): string | null | undefined {
+    return this.props.ordemServicoId;
+  }
+
+  get formaPagamentoPrevista(): string | null | undefined {
+    return this.props.formaPagamentoPrevista;
+  }
+
+  get condicaoPagamento(): string | null | undefined {
+    return this.props.condicaoPagamento;
+  }
+
+  get observacaoPagamento(): string | null | undefined {
+    return this.props.observacaoPagamento;
   }
 }

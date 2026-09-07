@@ -102,7 +102,7 @@ describe("GerarOrdemServicoUseCase", () => {
     ).rejects.toThrow(OrcamentoNaoAprovadoError);
   });
 
-  it("é idempotente: retorna a OS existente sem criar outra", async () => {
+  it("lança ValidationError quando o orçamento já possui uma OS vinculada", async () => {
     const orcamento = criarOrcamentoAceito();
     const osExistente = OrdemServico.criar({
       negocioId: "neg-1",
@@ -122,12 +122,14 @@ describe("GerarOrdemServicoUseCase", () => {
       } as unknown as OrcamentosRepository,
     );
 
-    const resultado = await useCase.execute({
-      negocioId: "neg-1",
-      orcamentoId: orcamento.id,
-    });
-
-    expect(resultado).toBe(osExistente);
+    await expect(
+      useCase.execute({
+        negocioId: "neg-1",
+        orcamentoId: orcamento.id,
+      }),
+    ).rejects.toThrow(
+      new ValidationError("Este orçamento já possui uma Ordem de Serviço vinculada."),
+    );
     expect(salvar).not.toHaveBeenCalled();
   });
 

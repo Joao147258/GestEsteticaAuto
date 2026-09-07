@@ -47,6 +47,18 @@ export class CriarOrcamentoDto {
   @IsString()
   observacoes?: string;
 
+  @IsOptional()
+  @IsString()
+  formaPagamentoPrevista?: string;
+
+  @IsOptional()
+  @IsString()
+  condicaoPagamento?: string;
+
+  @IsOptional()
+  @IsString()
+  observacaoPagamento?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CriarOrcamentoItemDto)

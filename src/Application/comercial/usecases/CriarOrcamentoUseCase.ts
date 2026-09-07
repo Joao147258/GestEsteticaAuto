@@ -67,6 +67,9 @@ export class CriarOrcamentoUseCase {
       clienteId: input.clienteId,
       veiculoId: input.veiculoId,
       origem: input.origem,
+      formaPagamentoPrevista: input.formaPagamentoPrevista ?? null,
+      condicaoPagamento: input.condicaoPagamento ?? null,
+      observacaoPagamento: input.observacaoPagamento ?? null,
       observacoes: input.observacoes ?? null,
       validoAte: input.validadeEm ?? null,
     });

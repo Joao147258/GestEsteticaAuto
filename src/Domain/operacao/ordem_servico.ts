@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { OperacaoError } from "./OperacaoError";
-import { OrdemServicoProps, CriarOrdemServicoProps } from "./OrdemServicoProps";
+import { OrdemServicoProps, CriarOrdemServicoProps, PagamentoCombinadoProps } from "./OrdemServicoProps";
 import { ItemOrdemServico } from "./item_ordem_servico";
 import { ItemOrdemServicoProps, CriarItemOrdemServicoProps } from "./ItemOrdemServicoProps";
 import { InspecaoEntrada } from "./inspecao_entrada";
@@ -57,6 +57,7 @@ export class OrdemServico {
       previsaoInicio: props.previsaoInicio ?? null,
       previsaoConclusao: props.previsaoConclusao ?? null,
       observacoes: props.observacoes?.trim() || null,
+      pagamentoCombinado: props.pagamentoCombinado ? { ...props.pagamentoCombinado } : null,
       alteracoes: [],
       criadoEm: new Date(),
       atualizadoEm: new Date(),
@@ -476,5 +477,9 @@ export class OrdemServico {
 
   get atualizadoEm(): Date {
     return this.props.atualizadoEm;
+  }
+
+  get pagamentoCombinado(): PagamentoCombinadoProps | null | undefined {
+    return this.props.pagamentoCombinado ? { ...this.props.pagamentoCombinado } : null;
   }
 }

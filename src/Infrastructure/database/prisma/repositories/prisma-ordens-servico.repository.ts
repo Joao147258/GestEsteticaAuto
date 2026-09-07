@@ -48,7 +48,16 @@ export class PrismaOrdensServicoRepository implements OrdensServicoRepository {
   ): Promise<OrdemServico | null> {
     const os = await this.prisma.ordemServico.findFirst({
       where: { id: ordemServicoId, negocioId },
-      include: { itens: true },
+      include: {
+        itens: true,
+        orcamento: {
+          select: {
+            formaPagamentoPrevista: true,
+            condicaoPagamento: true,
+            observacaoPagamento: true,
+          },
+        },
+      },
     });
 
     return os ? PrismaOrdemServicoMapper.toDomain(os) : null;
@@ -61,7 +70,16 @@ export class PrismaOrdensServicoRepository implements OrdensServicoRepository {
   ): Promise<OrdemServico | null> {
     const os = await this.prisma.ordemServico.findFirst({
       where: { negocioId, orcamentoId },
-      include: { itens: true },
+      include: {
+        itens: true,
+        orcamento: {
+          select: {
+            formaPagamentoPrevista: true,
+            condicaoPagamento: true,
+            observacaoPagamento: true,
+          },
+        },
+      },
     });
 
     return os ? PrismaOrdemServicoMapper.toDomain(os) : null;
@@ -116,7 +134,16 @@ export class PrismaOrdensServicoRepository implements OrdensServicoRepository {
             }
           : {}),
       },
-      include: { itens: true },
+      include: {
+        itens: true,
+        orcamento: {
+          select: {
+            formaPagamentoPrevista: true,
+            condicaoPagamento: true,
+            observacaoPagamento: true,
+          },
+        },
+      },
       skip: (pagina - 1) * limite,
       take: limite,
       orderBy: { criadoEm: "desc" },

@@ -1,4 +1,8 @@
 import { OrdemServico } from '../../../../Domain';
+import {
+  FORMAS_PAGAMENTO_LABELS,
+  CONDICOES_PAGAMENTO_LABELS,
+} from '../../../../Domain/comercial';
 
 // OrdemServicoPresenter — formata as entidades de domínio OrdemServico em respostas HTTP estáveis.
 // Garante o desacoplamento entre o modelo de domínio rico e o contrato REST esperado pelo frontend.
@@ -26,6 +30,21 @@ export class OrdemServicoPresenter {
       previsaoInicio: os.previsaoInicio ? os.previsaoInicio.toISOString() : null,
       previsaoConclusao: os.previsaoConclusao ? os.previsaoConclusao.toISOString() : null,
       observacoes: os.observacoes ?? null,
+      pagamentoCombinado: os.pagamentoCombinado
+        ? {
+            formaPagamentoPrevista: os.pagamentoCombinado.formaPagamentoPrevista ?? null,
+            formaPagamentoPrevistaLabel: os.pagamentoCombinado.formaPagamentoPrevista
+              ? (FORMAS_PAGAMENTO_LABELS[os.pagamentoCombinado.formaPagamentoPrevista.toUpperCase()] ||
+                 os.pagamentoCombinado.formaPagamentoPrevista)
+              : null,
+            condicaoPagamento: os.pagamentoCombinado.condicaoPagamento ?? null,
+            condicaoPagamentoLabel: os.pagamentoCombinado.condicaoPagamento
+              ? (CONDICOES_PAGAMENTO_LABELS[os.pagamentoCombinado.condicaoPagamento.toUpperCase()] ||
+                 os.pagamentoCombinado.condicaoPagamento)
+              : null,
+            observacaoPagamento: os.pagamentoCombinado.observacaoPagamento ?? null,
+          }
+        : null,
       itens: (os.itens ?? []).map((item) => ({
         id: item.id,
         servicoId: item.servicoId ?? null,

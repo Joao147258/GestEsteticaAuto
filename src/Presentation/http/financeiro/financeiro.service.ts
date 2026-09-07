@@ -8,11 +8,22 @@ import {
 } from '../../../Application/financeiro';
 import { OrcamentosRepository } from '../../../Application/comercial/repositories/OrcamentosRepository';
 import { NotFoundError } from '../../../Shared/errors/not-found.error';
+import { ValidationError } from '../../../Shared/errors/validation.error';
 import {
   GerarTituloReceberDto,
   ListarTitulosReceberQueryDto,
   RegistrarPagamentoDto,
 } from './dto';
+
+export const FORMAS_PAGAMENTO_PADRAO = [
+  { id: 'DINHEIRO', codigo: 'DINHEIRO', nome: 'Dinheiro' },
+  { id: 'PIX', codigo: 'PIX', nome: 'Pix' },
+  { id: 'CARTAO_DEBITO', codigo: 'CARTAO_DEBITO', nome: 'Cartão de Débito' },
+  { id: 'CARTAO_CREDITO', codigo: 'CARTAO_CREDITO', nome: 'Cartão de Crédito' },
+  { id: 'TRANSFERENCIA', codigo: 'TRANSFERENCIA', nome: 'Transferência' },
+  { id: 'BOLETO', codigo: 'BOLETO', nome: 'Boleto' },
+  { id: 'OUTRO', codigo: 'OUTRO', nome: 'Outro' },
+];
 
 // FinanceiroService — camada de serviço HTTP do módulo financeiro.
 // Orquestra as chamadas aos use-cases de geração de títulos, consulta, quitação de parcelas e cancelamento.
@@ -125,21 +136,37 @@ export class FinanceiroService {
     });
   }
 
+  // Lista as modalidades de pagamento disponíveis para quitação financeira.
+  async listarFormasPagamento(_negocioId?: string) {
+    return FORMAS_PAGAMENTO_PADRAO;
+  }
+
   // Registra quitação (parcial ou integral) de uma parcela do título a receber.
   async registrarPagamento(
     negocioId: string,
     tituloId: string,
     dto: RegistrarPagamentoDto,
   ) {
+    const valorReal = dto.valorPago ?? dto.valor;
+    if (valorReal === undefined || valorReal === null || Number(valorReal) <= 0) {
+      throw new ValidationError('valorPago deve ser numérico e maior que zero');
+    }
+
+    const formaDescricao =
+      dto.formaPagamentoDescricao || dto.formaPagamento || 'Pix';
+    const formaId =
+      dto.formaPagamentoId ||
+      dto.formaPagamento?.toUpperCase() ||
+      dto.formaPagamentoDescricao?.toUpperCase() ||
+      'PADRAO';
+
     return this.registrarPagamentoUseCase.execute({
       negocioId,
       tituloId,
       parcelaFinanceiraId: dto.parcelaId,
-      valor: dto.valorPago,
-      formaPagamentoId:
-        dto.formaPagamentoId ||
-        (dto.formaPagamento ? dto.formaPagamento.toUpperCase() : 'PADRAO'),
-      formaPagamentoDescricao: dto.formaPagamento || 'Forma Padrão',
+      valor: Number(valorReal),
+      formaPagamentoId: formaId,
+      formaPagamentoDescricao: formaDescricao,
       dataPagamento: dto.dataPagamento ? new Date(dto.dataPagamento) : undefined,
       observacao: dto.observacoes,
     });
